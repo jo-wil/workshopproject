@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html>
+   <head>
+      <title> Cal Poly SWM </title>
+      <!-- Pure CSS -->
+      <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+      <!-- My Styles -->
+      <link rel="stylesheet" href="/static/styles/style.css">
+      <script src="/static/scripts/main.js"></script>
+   </head>
+   <body>	
+      <header class="small-padding">
+         <h1 class="text-center" id="title"> Cal Poly SWM </h1>
+      </header>
+      <div id="content" class="max-height">
+         <div class="pure-g">
+            <div id="search-div" class="pure-u-1-5">
+               <div>
+                  <div class="pure-form pure-form-stacked text-center">
+                   <fieldset>
+                       <legend> <h2> Search </h2> </legend>
+                       <label for="class-select"> Class </label>
+                       <select class="center" id="class-select">
+                          <option value="0"> Not Selected </option>
+                          <option value="141"> Math 141 </option>
+                          <option value="142"> Math 142 </option>
+                          <option value="143"> Math 143 </option>
+                       </select>
+                       <label for="topic-select"> Topic </label>
+                       <select id="topic-select">
+                          <option value="0"> Not Selected </option>
+                       </select>
+                       <br>
+                       <button id="search-button" class="pure-button pure-button-primary"> Search </button>
+                   </fieldset>
+                  </div>
+                  <div id="result-div" class="text-center">
+                  </div>
+               </div>
+            </div>
+            <div id="display-div" class="pure-u-3-5">
+               <div class="small-padding">
+                  <iframe id="preview-iframe" class="max-height max-width" src="/static/worksheets/worksheet.txt"></iframe>
+               </div>
+            </div>
+            <div id="tools-div" class="pure-u-1-5">
+               <div>
+                  <div class="pure-form pure-form-stacked text-center">
+                   <fieldset>
+                       <legend> <h2> Tools </h2> </legend>
+                   </fieldset>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div> 
+   </body>
+</html>

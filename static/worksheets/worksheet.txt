@@ -1,0 +1,23 @@
+\documentclass{exam}
+\title{Worksheet}
+\begin{document}
+\maketitle
+\begin{questions}
+\question
+ problem1
+\begin{solution}
+ solution1
+\end{solution}
+\question
+ problem3
+\begin{solution}
+ solution3
+\end{solution}
+\question
+ problem2
+\begin{solution}
+ solution2
+\end{solution}
+%problems
+\end{questions}
+\end{document}

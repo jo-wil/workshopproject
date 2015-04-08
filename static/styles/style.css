@@ -1,0 +1,48 @@
+header {
+   color: white;
+   background: green;
+}
+#title {
+   font-size: 250%;
+   text-shadow: 2px 2px black;
+}
+.large-font {
+   font-size: 125%;
+}
+.center {
+   margin: auto;
+}
+.text-center {
+   text-align: center;
+}
+.max-height {
+   min-height: 1000px;
+}
+.max-width {
+   width: 100%;
+}
+.small-padding {
+   padding: .5%;
+}
+.padding {
+   padding: 2.5%;
+}
+.border {
+   border: 1px solid black;
+}
+/* Hack to force the select to center */
+select {
+   display: block !important;
+   margin: auto !important;
+}
+/* Force the links to be white */
+a {
+   color: white !important;
+}
+a:hover {
+   cursor: pointer;
+}
+.button-success {
+   color: white;
+   background: rgb(28, 184, 65); /* this is a green */
+}
