@@ -26,7 +26,6 @@ class Worksheet:
 class Database:
     def GET(self):
        user_data = web.input(class_name = 'None', topic = 'None')
-       print user_data
        return db.query(user_data.class_name, user_data.topic)
  
 class Index:        
