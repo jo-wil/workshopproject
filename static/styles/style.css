@@ -21,6 +21,9 @@ header {
 .max-width {
    width: 100%;
 }
+.margin {
+   margin: .5%;
+}
 .small-padding {
    padding: .5%;
 }
