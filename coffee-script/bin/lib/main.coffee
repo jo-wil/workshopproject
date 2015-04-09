@@ -109,10 +109,11 @@ class Worksheet
 
    constructor: ->
      @problems = []
-     @defaultContent = """\\documentclass{exam}
+     @defaultContent = """\\documentclass{article}
                           \\title{Worksheet}
+                          \\author{SWM}
                           \\begin{document}
-                          \\maketitle
+                          \\maketitle\n
                           %problems
                           \\end{document}"""
      @content = @defaultContent
@@ -122,17 +123,16 @@ class Worksheet
    
      @problems.push({'problem':problem,'solution':solution})
    
-     startString = '\\begin{questions}\n'
-     problemString = '%problems\n'
-     endString = '\\end{questions}\n'
+     @content = @defaultContent
      
-     @content = @defaultContent.replace(problemString, startString + problemString)
-     @content = @content.replace(problemString, problemString + endString)
+     problemString = '%problems\n'
+     
+     space = '\\vspace{5mm}\n\n'
      
      for p in @problems
-       problem = '\\question\n ' + p.problem + '\n'
-       solution = '\\begin{solution}\n ' + p.solution + '\n' + '\\end{solution}\n'
-       @content = @content.replace(problemString, problem + solution + problemString)   
+       problem = p.problem + '\n\n'
+       solution = p.solution + '\n\n'
+       @content = @content.replace(problemString, problem + solution + space + problemString)   
         
      @update()
      return

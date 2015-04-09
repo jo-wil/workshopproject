@@ -125,28 +125,26 @@ Listeners = (function() {
 Worksheet = (function() {
   function Worksheet() {
     this.problems = [];
-    this.defaultContent = "\\documentclass{exam}\n\\title{Worksheet}\n\\begin{document}\n\\maketitle\n%problems\n\\end{document}";
+    this.defaultContent = "\\documentclass{article}\n\\title{Worksheet}\n\\author{SWM}\n\\begin{document}\n\\maketitle\n\n%problems\n\\end{document}";
     this.content = this.defaultContent;
     this.update();
   }
 
   Worksheet.prototype.addProblem = function(problem, solution) {
-    var endString, i, len, p, problemString, ref, startString;
+    var i, len, p, problemString, ref, space;
     this.problems.push({
       'problem': problem,
       'solution': solution
     });
-    startString = '\\begin{questions}\n';
+    this.content = this.defaultContent;
     problemString = '%problems\n';
-    endString = '\\end{questions}\n';
-    this.content = this.defaultContent.replace(problemString, startString + problemString);
-    this.content = this.content.replace(problemString, problemString + endString);
+    space = '\\vspace{5mm}\n\n';
     ref = this.problems;
     for (i = 0, len = ref.length; i < len; i++) {
       p = ref[i];
-      problem = '\\question\n ' + p.problem + '\n';
-      solution = '\\begin{solution}\n ' + p.solution + '\n' + '\\end{solution}\n';
-      this.content = this.content.replace(problemString, problem + solution + problemString);
+      problem = p.problem + '\n\n';
+      solution = p.solution + '\n\n';
+      this.content = this.content.replace(problemString, problem + solution + space + problemString);
     }
     this.update();
   };

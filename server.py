@@ -20,7 +20,7 @@ class Worksheet:
        with open('./static/worksheets/worksheet.txt','w') as f:
           f.write(user_data.worksheet)
           f.close()
-       ret = subprocess.call(['pdflatex', '-halt-on-error', '-output-directory', './static/worksheets' ,'worksheet.txt'])
+       ret = 0# subprocess.call(['pdflatex', '-halt-on-error', '-output-directory', './static/worksheets' ,'worksheet.txt'])
        return ret
 
 class Database:
