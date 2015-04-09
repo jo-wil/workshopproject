@@ -33,18 +33,6 @@ header {
 .border {
    border: 1px solid black;
 }
-/* Hack to force the select to center */
-select {
-   display: block !important;
-   margin: auto !important;
-}
-/* Force the links to be white */
-a {
-   color: white !important;
-}
-a:hover {
-   cursor: pointer;
-}
 .button-success {
    color: white;
    background: rgb(28, 184, 65); /* this is a green */

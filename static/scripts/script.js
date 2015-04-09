@@ -5,11 +5,12 @@ Config = {
   topics141: [{'text': 'Not Selected', 'value': '0'},
               {'text': 'Limits', 'value': 'limits'}, 
               {'text': 'Derivatives', 'value': 'derivatives'},
-              {'text': 'Integrals','value': 'integrals'}]
+              {'text': 'Integrals','value': 'integrals'},
+              {'text': 'Taylor and Maclaurin Series','value': 'sdal'}]
 };
 
 
-/* UI bject */
+/* UI Object */
 UI = {}
 
 UI.init = function () {
@@ -69,42 +70,26 @@ Listeners.searchButton = function () {
           problemDiv.append(problem);
           problemDiv.append(button);
           resultDiv.append(problemDiv);
+          button.on('click',Listeners.addButton);
        }
     });
-     /* var Listen, addButton, i, index, len, problem, problemDiv, result, resultCount, resultDiv, resultList, results;
-        resultList = JSON.parse(xmlhttp.responseText);
-        resultDiv = document.getElementById('result-div');
-        resultDiv.innerHTML = '';
-        resultCount = document.createElement('p');
-        resultCount.innerHTML = 'Search returned ' + resultList.length + ' problems.';
-        resultDiv.appendChild(resultCount);
-        Listen = new Listeners();
-        results = [];
-        for (index = i = 0, len = resultList.length; i < len; index = ++i) {
-          result = resultList[index];
-          problemDiv = document.createElement('div');
-          problemDiv.classList.add('padding');
-          problem = document.createElement('span');
-          addButton = document.createElement('button');
-          problem.innerHTML = result.problem;
-          addButton.innerHTML = 'Add';
-          problem.setAttribute('id', 'problem' + index);
-          problem.setAttribute('problem', result.problem);
-          problem.setAttribute('solution', result.solution);
-          problem.classList.add('padding');
-          addButton.setAttribute('id', 'add' + index);
-          addButton.setAttribute('problemNum', index);
-          addButton.classList.add('add-button');
-          addButton.classList.add('pure-button');
-          addButton.classList.add('button-success');
-          problemDiv.appendChild(problem);
-          problemDiv.appendChild(addButton);
-          resultDiv.appendChild(problemDiv);
-          results.push(document.getElementById('add' + index).addEventListener('click', Listen.addButtonListener));
-        }
-        return results;
-      }
-    };*/
+}
+
+Listeners.addButton = function () {
+
+   var problem, solution, parentDiv, problemSpan, worksheetDiv, problemDiv;
+   parentDiv = $(this).parent();
+   problemSpan = parentDiv.find('span');
+   
+   problem = problemSpan.attr('problem');
+   solution = problemSpan.attr('solution');
+   problemSpan = $('<span></span>').addClass('padding').attr({'problem':problem, 'solution':solution}).html(problem);
+   worksheetDiv = $('#worksheet-content');
+   problemDiv = $('<div></div>').addClass('padding border');
+   problemDiv.append(problemSpan);
+   worksheetDiv.append(problemDiv);
+   
+   // TODO Add to worksheet datastructure
 }
 
 $(document).ready(function() {
