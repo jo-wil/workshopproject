@@ -30,10 +30,20 @@ header {
 .padding {
    padding: 2.5%;
 }
+.margin {
+   margin: 1%;
+}
 .border {
    border: 1px solid black;
 }
 .button-success {
    color: white;
    background: rgb(28, 184, 65); /* this is a green */
+}
+.button-error {
+   color: white;
+   background: rgb(202, 60, 60); /* this is a maroon */
+}
+.click-me:hover {
+   cursor: pointer;
 }

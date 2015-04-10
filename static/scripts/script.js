@@ -5,24 +5,66 @@ Config = {
   topics141: [{'text': 'Not Selected', 'value': '0'},
               {'text': 'Limits', 'value': 'limits'}, 
               {'text': 'Derivatives', 'value': 'derivatives'},
-              {'text': 'Integrals','value': 'integrals'},
-              {'text': 'Taylor and Maclaurin Series','value': 'sdal'}]
-};
-
+              {'text': 'Integrals','value': 'integrals'}]
+}
 
 /* UI Object */
 UI = {}
 
 UI.init = function () {
 
-   console.log('Init UI...');
    $('#class-select').on('change',Listeners.classSelect);
    $('#search-button').on('click',Listeners.searchButton);
-
+   Worksheet.render();
 }
 
 /* Worksheet Object */
+Worksheet = {}
 
+Worksheet.title = 'Worksheet';
+Worksheet.problems = [];
+Worksheet.state = 'HTML'; // other option is Latex
+
+Worksheet.render = function () {
+
+   if (Worksheet.state === 'HTML') {
+      Worksheet.renderHTML();
+   } else if (Worksheet.state === 'Latex') {
+      Worksheet.renderLatex();
+   } else {
+      console.log('Rendering Error!');
+   }
+}
+
+Worksheet.renderHTML = function () {
+
+   var i, len, problemSpan, worksheetDiv, worksheetHeader, problemDiv, titleDiv, title, p;
+
+   worksheetHeader = $('#worksheet-header');
+   worksheetHeader.empty();
+   
+   titleDiv = $('<div></div>').addClass('border').on('click',Listeners.editTitle);
+   title = $('<h1></h1>').addClass('text-center click-me').html(Worksheet.title);
+   titleDiv.append(title);
+   
+   worksheetHeader.append(titleDiv);
+
+   worksheetDiv = $('#worksheet-content');
+   worksheetDiv.empty();
+   len = Worksheet.problems.length;
+   
+   for (i = 0; i < len; i++) {
+      p = Worksheet.problems[i];
+      problemSpan = $('<span></span>').addClass('padding').attr({'problem':p.problem, 'solution':p.solution}).html(p.problem);
+      problemDiv = $('<div></div>').addClass('padding border');
+      problemDiv.append(problemSpan);
+      worksheetDiv.append(problemDiv);
+   }
+}
+
+Worksheet.renderLatex = function () {
+ // TODO
+}
 
 /* Listeners Object */
 Listeners = {}
@@ -30,7 +72,7 @@ Listeners = {}
 Listeners.classSelect = function () {
    var i, len, o, option, options, topicSelect;
    topicSelect = $('#topic-select');
-   topicSelect.html('');
+   topicSelect.empty();
    switch (this.value) {
       case '141':
          options = Config.topics141;
@@ -48,7 +90,7 @@ Listeners.classSelect = function () {
 }
 
 Listeners.searchButton = function () {
-   var className, topic, len, result, resultList, resultDiv, resultCount, problemDiv;
+   var i, len, className, topic, result, resultList, resultDiv, resultCount, problemDiv;
     className = $('#class-select').val();
     topic = $('#topic-select').val();
     $.get("/database", {'class_name':className,'topic':topic}, function (data, status) {
@@ -57,7 +99,7 @@ Listeners.searchButton = function () {
        len = resultList.length;
        
        resultDiv = $('#result-div');
-       resultDiv.html('');
+       resultDiv.empty();
        
        resultCount = $('<p></p>').html('Search returned ' + len + ' problems.');
        resultDiv.append(resultCount);
@@ -77,19 +119,44 @@ Listeners.searchButton = function () {
 
 Listeners.addButton = function () {
 
-   var problem, solution, parentDiv, problemSpan, worksheetDiv, problemDiv;
-   parentDiv = $(this).parent();
-   problemSpan = parentDiv.find('span');
+   var problem, solution, problemSpan;
+   problemSpan = $(this).parent().find('span');
    
    problem = problemSpan.attr('problem');
    solution = problemSpan.attr('solution');
-   problemSpan = $('<span></span>').addClass('padding').attr({'problem':problem, 'solution':solution}).html(problem);
-   worksheetDiv = $('#worksheet-content');
-   problemDiv = $('<div></div>').addClass('padding border');
-   problemDiv.append(problemSpan);
-   worksheetDiv.append(problemDiv);
    
-   // TODO Add to worksheet datastructure
+   Worksheet.problems.push({'problem':problem, 'solution':solution})
+   Worksheet.render();
+}
+
+Listeners.editTitle = function () {
+   var div, oldText, editText, saveButton, cancelButton;
+   
+   div = $(this);
+   oldText = div.children().html();
+   
+   div.empty();
+   div.unbind('click');
+   
+   editText = $('<input></input>').addClass('margin small-padding').attr('id','new-title').val(oldText);
+   saveButton = $('<button></button>').addClass('add-button pure-button button-success margin').html('Save').on('click',Listeners.saveTitle);
+   editButton = $('<button></button>').addClass('add-button pure-button button-error margin').html('Cancel').on('click',Listeners.cancel);
+   
+   div.append(editText);
+   div.append('<br>')
+   div.append(saveButton);
+   div.append(editButton);
+      
+}
+
+Listeners.saveTitle = function () {
+   
+   Worksheet.title = $('#new-title').val();
+   Worksheet.render();
+}
+
+Listeners.cancel = function () {
+   Worksheet.render();
 }
 
 $(document).ready(function() {
