@@ -3,7 +3,7 @@ header {
    background: green;
 }
 #title {
-   font-size: 250%;
+   font-size: 2.5em;
    text-shadow: 2px 2px black;
 }
 .large-font {
@@ -36,12 +36,21 @@ header {
 .border {
    border: 1px solid black;
 }
-.button-success {
+.button-success,
+.button-error,
+.button-warning {
    color: white;
+   border-radius: 4px;
+   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.button-success {
    background: rgb(28, 184, 65); /* this is a green */
 }
+.button-warning {
+   background: rgb(223, 117, 20); /* this is an orange */
+}
 .button-error {
-   color: white;
    background: rgb(202, 60, 60); /* this is a maroon */
 }
 .click-me:hover {

@@ -43,18 +43,20 @@
                </div>
             </div>
             <div id="display-div" class="pure-u-3-5">
-               <div class="small-padding border max-height margin">
-                  <div id="worksheet-header" class="border">
-                  </div>
-                  <div id="worksheet-content" class="border">
-                  </div>
+               <div id="worksheet" class="small-padding border max-height margin">
                </div>
             </div>
             <div id="tools-div" class="pure-u-1-5">
                <div>
-                  <div class="pure-form pure-form-stacked text-center">
+                  <div class="pure-form pure-form-stacked text-center padding">
                    <fieldset>
                        <legend> <h2> Tools </h2> </legend>
+                       <button id="toggle-button" class="pure-button pure-button-primary"> Toggle View </button>
+                       <h3> New Problem </h3>
+                       <textarea id="new-directions" class="max-width" placeholder="Directions"></textarea>
+                       <textarea id="new-problem" class="max-width" placeholder="Problem"></textarea>
+                       <textarea id="new-solution" class="max-width" placeholder="Solution"></textarea>
+                       <button id="add-button" class="pure-button button-success"> Add </button>
                    </fieldset>
                   </div>
                </div>
