@@ -1,9 +1,12 @@
-var Config, UI, Worksheet, Listeners; 
+var Config, UI, Worksheet, Listeners, MathDisplay; 
 
 /* Config Object */
 Config = {
-  topics141: [{'text': 'Not Selected', 'value': '0'},
-              {'text': 'Limits', 'value': 'limits'}, 
+  classes: [{'text': 'Math 141', 'value': '141'}, 
+            {'text': 'Math 142', 'value': '142'}, 
+            {'text': 'Math 143', 'value': '143'}],
+            
+  topics141: [{'text': 'Limits', 'value': 'limits'}, 
               {'text': 'Derivatives', 'value': 'derivatives'},
               {'text': 'Integrals','value': 'integrals'}]
 }
@@ -13,11 +16,61 @@ UI = {}
 
 UI.init = function () {
 
+   UI.initSelect();
+   UI.initListeners();
+   MathDisplay.init();
+   Worksheet.render();
+}
+
+UI.initListeners = function () {
    $('#class-select').on('change',Listeners.classSelect);
    $('#search-button').on('click',Listeners.searchButton);
    $('#add-button').on('click',Listeners.addNewButton);
    $('#toggle-button').on('click',Listeners.toggleButton);
-   Worksheet.render();
+}
+
+UI.initSelect = function () {
+
+   var i, len, o, option, options, topicSelect, classSelect;
+   
+   classSelect = $('#class-select');
+   classSelect.empty();
+   
+   options = Config.classes;
+   len = options.length;
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      classSelect.append(option);
+   }
+   
+   topicSelect = $('#topic-select');
+   topicSelect.empty();
+   
+   options = Config.topics141;
+   len = options.length;
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      topicSelect.append(option);
+   }
+}
+
+/* MathDisplay Object */
+
+MathDisplay = {}
+
+MathDisplay.init = function () {
+   // Config MathJax
+   MathJax.Hub.Config({
+      showProcessingMessages: true,
+      showMathMenu: false,
+      tex2jax: { inlineMath: [['$','$']] }
+   });
+}
+
+MathDisplay.parseLatex = function () {
+   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
 
 /* Worksheet Object */
@@ -54,7 +107,7 @@ Worksheet.renderHTMLProblem = function (index, worksheetDiv, p) {
    problemSpan = $('<p></p>').html('Problem: ' + p.problem);
    problemDiv.append(problemSpan);
    
-   solutionSpan = $('<p></p>').html('Soltution: ' + p.solution);
+   solutionSpan = $('<p></p>').html('Solution: ' + p.solution);
    problemDiv.append(solutionSpan);
    
    worksheetDiv.append(problemDiv);
@@ -95,7 +148,8 @@ Worksheet.renderHTML = function () {
    
    Worksheet.renderHTMLHeader(worksheet);
    Worksheet.renderHTMLContent(worksheet);
-
+   
+   MathDisplay.parseLatex();
 }
 
 Worksheet.renderLatex = function () {
@@ -122,7 +176,7 @@ Worksheet.renderLatex = function () {
    content += '\\end{document}';   
    $.post("/worksheet", {worksheet: content}).done( function (data) {
        console.log(data);
-       iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/worksheet');
+       iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
        worksheet.append(iframe);
    });
    
@@ -146,19 +200,20 @@ Listeners.classSelect = function () {
             topicSelect.append(option);
          }
          break;
-      default:
-         option = document.createElement('option');
-         option = $('<option></option>').attr('value',0).html('Not Selected');
-         topicSelect.append(option);
    }
 }
 
 Listeners.toggleButton = function () {
 
+   var button;
+   
+   button = $('#toggle-button');
    if (Worksheet.state === 'HTML') {
       Worksheet.state = 'Latex';
+      button.html('Edit Worksheet');
    } else if (Worksheet.state === 'Latex') {
       Worksheet.state = 'HTML';
+      button.html('View As PDF');
    } else {
       console.log('Toggle Error');
    }
@@ -167,31 +222,37 @@ Listeners.toggleButton = function () {
 
 Listeners.searchButton = function () {
    
-   var i, len, className, topic, result, resultList, resultDiv, resultCount, problemDiv;
-    className = $('#class-select').val();
-    topic = $('#topic-select').val();
-    $.get("/database", {'class_name':className,'topic':topic}, function (data, status) {
+   var i, len, classSelect, topicSelect, classVal, topicVal, className, topicText, result, resultList, resultDiv, resultCount, problemDiv;
+   classSelect = $('#class-select');
+   topicSelect = $('#topic-select');
+   classVal = classSelect.val();
+   topicVal = topicSelect.val();
+   className = classSelect.children("option:selected").html();
+   topicText = topicSelect.children("option:selected").html();
     
-       resultList = JSON.parse(data);
-       len = resultList.length;
+   $.get("/database", {'class_name': classVal, 'topic': topicVal}, function (data, status) {
+    
+      resultList = JSON.parse(data);
+      len = resultList.length;
        
-       resultDiv = $('#result-div');
-       resultDiv.empty();
+      resultDiv = $('#result-div');
+      resultDiv.empty();
        
-       resultCount = $('<p></p>').html('Search returned ' + len + ' problems.');
-       resultDiv.append(resultCount);
+      resultCount = $('<p></p>').html('Search for ' + className + ' ' + topicText + ' returned ' + len + ' problems.');
+      resultDiv.append(resultCount);
        
-       for (i = 0; i < len; i++) {
-          result = resultList[i];
-          problemDiv = $('<div></div>').addClass('padding');
-          problem = $('<span></span>').addClass('padding').attr({'problem':result.problem, 'solution':result.solution}).html(result.problem);
-          button = $('<button></button>').addClass('add-button pure-button button-success').html('Add');
-          problemDiv.append(problem);
-          problemDiv.append(button);
-          resultDiv.append(problemDiv);
-          button.on('click',Listeners.addButton);
-       }
-    });
+      for (i = 0; i < len; i++) {
+         result = resultList[i];
+         problemDiv = $('<div></div>').addClass('padding');
+         problem = $('<span></span>').addClass('padding math').attr({'problem':result.problem, 'solution':result.solution}).html(result.problem);
+         button = $('<button></button>').addClass('add-button pure-button button-success').html('Add');
+         problemDiv.append(problem);
+         problemDiv.append(button);
+         resultDiv.append(problemDiv);
+         button.on('click',Listeners.addButton);
+      }
+      MathDisplay.parseLatex();
+   });
 }
 
 Listeners.addButton = function () {

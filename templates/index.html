@@ -6,7 +6,9 @@
       <!-- Pure CSS -->
       <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
       <!-- JQuery -->
-      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+      <!-- MathJax -->
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
       <!-- My Styles -->
       <link rel="stylesheet" href="/static/styles/style.css">
       <!-- My Scripts -->
@@ -25,14 +27,9 @@
                        <legend> <h2> Search </h2> </legend>
                        <label for="class-select"> Class </label>
                        <select id="class-select" class="max-width">
-                          <option value="0"> Not Selected </option>
-                          <option value="141"> Math 141 </option>
-                          <option value="142"> Math 142 </option>
-                          <option value="143"> Math 143 </option>
                        </select>
                        <label for="topic-select"> Topic </label>
                        <select id="topic-select" class="max-width">
-                          <option value="0"> Not Selected </option>
                        </select>
                        <br>
                        <button id="search-button" class="pure-button pure-button-primary"> Search </button>
@@ -51,7 +48,8 @@
                   <div class="pure-form pure-form-stacked text-center padding">
                    <fieldset>
                        <legend> <h2> Tools </h2> </legend>
-                       <button id="toggle-button" class="pure-button pure-button-primary"> Toggle View </button>
+                       <button id="toggle-button" class="pure-button pure-button-primary"> View As PDF </button>
+                       <br><br><br><br><br>
                        <h3> New Problem </h3>
                        <textarea id="new-directions" class="max-width" placeholder="Directions"></textarea>
                        <textarea id="new-problem" class="max-width" placeholder="Problem"></textarea>

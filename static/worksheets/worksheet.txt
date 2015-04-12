@@ -3,40 +3,22 @@
 \author{SWM}
 \begin{document}
 \maketitle
-New directions
 
-problem1
+
+$x^2$
 
 solution1
 
 
 
-problem2
+$x^3$
 
 solution2
 
 
 
-problem3
+$x^4$
 
 solution3
-
-
-
-problem4
-
-solution4
-
-
-
-problem5
-
-solution5
-
-NEW PROBLEM
-
-im new
-
-im news answer
 
 \end{document}

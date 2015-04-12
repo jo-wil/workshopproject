@@ -16,9 +16,6 @@ urls = (
 app = web.application(urls, globals())
 
 class Worksheet:
-    def GET(self):
-       return open('./static/worksheets/worksheet.pdf')
-
     def POST(self):
        user_data = web.input(worksheet = 'None')
        return w.refresh(user_data.worksheet)
