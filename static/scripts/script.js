@@ -16,6 +16,7 @@ UI.init = function () {
    $('#class-select').on('change',Listeners.classSelect);
    $('#search-button').on('click',Listeners.searchButton);
    $('#add-button').on('click',Listeners.addNewButton);
+   $('#toggle-button').on('click',Listeners.toggleButton);
    Worksheet.render();
 }
 
@@ -31,9 +32,9 @@ Worksheet.renderHTMLHeader = function (worksheet) {
 
    var worksheetHeader, titleDiv, title;
 
-   worksheetHeader = $('<div></div>').addClass('').attr('id','worksheet-header');
+   worksheetHeader = $('<div></div>').attr('id','worksheet-header');
    
-   titleDiv = $('<div></div>').addClass('').on('click',Listeners.editTitle);
+   titleDiv = $('<div></div>').on('click',Listeners.editTitle);
    title = $('<h1></h1>').addClass('text-center click-me').html(Worksheet.title);
    titleDiv.append(title);
    
@@ -63,7 +64,7 @@ Worksheet.renderHTMLContent = function (worksheet) {
 
    var i, len, problemSpan, worksheetDiv, problemDiv, p;
 
-   worksheetDiv = $('<div></div>').addClass('').attr('id','worksheet-content');
+   worksheetDiv = $('<div></div>').attr('id','worksheet-content');
    len = Worksheet.problems.length;
    
    for (i = 0; i < len; i++) {
@@ -98,6 +99,32 @@ Worksheet.renderHTML = function () {
 }
 
 Worksheet.renderLatex = function () {
+
+   var content, worksheet, iframe, i, len, p;
+   
+   worksheet = $('#worksheet');
+   worksheet.empty();
+   
+   content = '\\documentclass{article}\n' +
+             '\\title{' + Worksheet.title + '}\n' +
+             '\\author{SWM}\n' +
+             '\\begin{document}\n' +
+             '\\maketitle\n';
+             
+   len = Worksheet.problems.length;          
+   for (i = 0; i < len; i++) {
+      p = Worksheet.problems[i];
+      content += p.directions + '\n\n';
+      content += p.problem + '\n\n';
+      content += p.solution + '\n\n';
+   }
+   
+   content += '\\end{document}';   
+   $.post("/worksheet", {worksheet: content}).done( function (data) {
+       console.log(data);
+       iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/worksheet');
+       worksheet.append(iframe);
+   });
    
 }
 
@@ -105,13 +132,15 @@ Worksheet.renderLatex = function () {
 Listeners = {}
 
 Listeners.classSelect = function () {
+  
    var i, len, o, option, options, topicSelect;
    topicSelect = $('#topic-select');
    topicSelect.empty();
    switch (this.value) {
       case '141':
          options = Config.topics141;
-         for (i = 0, len = options.length; i < len; i++) {
+         len = options.length
+         for (i = 0; i < len; i++) {
             o = options[i];
             option = $('<option></option>').attr('value',o.value).html(o.text);
             topicSelect.append(option);
@@ -124,7 +153,20 @@ Listeners.classSelect = function () {
    }
 }
 
+Listeners.toggleButton = function () {
+
+   if (Worksheet.state === 'HTML') {
+      Worksheet.state = 'Latex';
+   } else if (Worksheet.state === 'Latex') {
+      Worksheet.state = 'HTML';
+   } else {
+      console.log('Toggle Error');
+   }
+   Worksheet.render();
+}
+
 Listeners.searchButton = function () {
+   
    var i, len, className, topic, result, resultList, resultDiv, resultCount, problemDiv;
     className = $('#class-select').val();
     topic = $('#topic-select').val();
@@ -247,7 +289,7 @@ Listeners.saveTitle = function () {
    
    Worksheet.title = $('#new-title').val();
    Worksheet.editing = false;
-   Worksheet.renderHTML();
+   Worksheet.render();
 }
 
 Listeners.saveProblem = function () {
@@ -264,13 +306,13 @@ Listeners.saveProblem = function () {
    Worksheet.problems[index] = {'directions':directions,'problem':problem,'solution':solution};
    
    Worksheet.editing = false;
-   Worksheet.renderHTML();
+   Worksheet.render();
 }
 
 Listeners.cancel = function () {
    
    Worksheet.editing = false;
-   Worksheet.renderHTML();
+   Worksheet.render();
 }
 
 Listeners.deleteProblem = function () {
@@ -283,7 +325,7 @@ Listeners.deleteProblem = function () {
    Worksheet.problems.splice(index, 1);   
    
    Worksheet.editing = false;
-   Worksheet.renderHTML();
+   Worksheet.render();
 }
 
 $(document).ready(function() {

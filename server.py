@@ -1,8 +1,9 @@
 import web
-import subprocess
 import database
+import worksheet
 
 db = database.DB()
+w = worksheet.Worksheet()
 
 render = web.template.render('templates/')
         
@@ -15,13 +16,13 @@ urls = (
 app = web.application(urls, globals())
 
 class Worksheet:
+    def GET(self):
+       return open('./static/worksheets/worksheet.pdf')
+
     def POST(self):
        user_data = web.input(worksheet = 'None')
-       with open('./static/worksheets/worksheet.txt','w') as f:
-          f.write(user_data.worksheet)
-          f.close()
-       ret = 0# subprocess.call(['pdflatex', '-halt-on-error', '-output-directory', './static/worksheets' ,'worksheet.txt'])
-       return ret
+       return w.refresh(user_data.worksheet)
+       
 
 class Database:
     def GET(self):

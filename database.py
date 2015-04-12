@@ -4,48 +4,85 @@ import sys
 
 class DB:
 
-   def __init__(self):
-      conn = sqlite3.connect('application.db')
-      c = conn.cursor()
-      c.execute('''CREATE TABLE IF NOT EXISTS Problems (problem TEXT UNIQUE, solution TEXT, class TEXT, topic TEXT, level TEXT)''')
-      conn.commit()
-      conn.close()
+    def __init__(self):
+        conn = sqlite3.connect('application.db')
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS Problems (problem TEXT UNIQUE, solution TEXT, class INTEGER, topic TEXT, level INTEGER)''')
+        conn.commit()
+        conn.close()
       
-   def query(self,class_name,topic):
-      conn = sqlite3.connect('application.db')
-      c = conn.cursor()  
-      c.execute("SELECT problem, solution FROM Problems WHERE class = ? AND topic = ? ORDER BY level", (class_name,topic))
-      rows = c.fetchall()
-      conn.close()
-      result = []
-      for row in rows:
-         result.append({'problem':row[0],'solution':row[1]})
-      return json.dumps(result)
+    def query(self,class_name,topic):
+        conn = sqlite3.connect('application.db')
+        c = conn.cursor()  
+        c.execute("SELECT problem, solution FROM Problems WHERE class = ? AND topic = ? ORDER BY level", (class_name,topic))
+        rows = c.fetchall()
+        conn.close()
+        result = []
+        for row in rows:
+           result.append({'problem':row[0],'solution':row[1]})
+        return json.dumps(result)
       
-   def parse_file(self, filename):
-      f = open(filename,'r')
-      new_problems = f.read()
-      f.close()
-      new_problems = new_problems.split('\n')
+    def parse_file(self, filename):
+        f = open(filename,'r')
+        data_file = f.read()
+        f.close()
+        data_rows = data_file.split('\n')
       
-      # database access
-      conn = sqlite3.connect('application.db')
-      c = conn.cursor()  
-      for problem in new_problems:
-         p = problem.split(',')
-         if len(p) == 5:
-            for index in p:
-               index.strip()
+        # data validation and normalization
+        index = 0
+        valid_rows = []
+        for row in data_rows:
+            row = row.split(',')
+            if len(row) == 5:
+                problem = row[0]
+                problem = problem.strip()
+            
+                solution = row[1]
+                solution = solution.strip()
+            
+                class_num = row[2]
+                class_num = class_num.strip()
+                try:
+                   class_num = int(class_num)
+                except:
+                   print 'Error parsing class num for row ' + str(index)
+                   sys.exit(1)
+                   
+                topic = row[3]
+                topic = topic.strip()
+                topic = topic.lower()
+                topic = topic.replace(' ','');
+                
+                level = row[4]
+                level.strip()
+                try:
+                   level = int(level)
+                except:
+                   print 'Error parsing level for row ' + str(index)
+                   sys.exit(1)
+                
+                print problem, solution, class_num, topic, level
+                
+                valid_rows.append([problem, solution, class_num, topic, level])
+                index += 1
+      
+        # database access
+        conn = sqlite3.connect('application.db')
+        c = conn.cursor()  
+        
+        for row in valid_rows:
             try:
-               c.execute("INSERT INTO Problems VALUES(?,?,?,?,?)", (p[0].strip(),p[1].strip(),p[2].strip(),p[3].strip(),p[4].strip()))
-            except:
-               p = None
-      conn.commit()
-      conn.close()
+               c.execute("INSERT INTO Problems VALUES(?,?,?,?,?)", (row[0],row[1],row[2],row[3],row[4]))
+            except sqlite3.Error, e:
+                print "Error %s:" % e.args[0]
+                sys.exit(1)
+        
+        conn.commit()
+        conn.close()
 
 def upload():
-   db = DB()      
-   db.parse_file(sys.argv[1])
+    db = DB()      
+    db.parse_file(sys.argv[1])
    
 if __name__ == "__main__" and len(sys.argv) == 2:
-   upload()
+    upload()

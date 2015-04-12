@@ -3,12 +3,40 @@
 \author{SWM}
 \begin{document}
 \maketitle
+New directions
 
 problem1
 
 solution1
 
-\vspace{5mm}
 
-%problems
+
+problem2
+
+solution2
+
+
+
+problem3
+
+solution3
+
+
+
+problem4
+
+solution4
+
+
+
+problem5
+
+solution5
+
+NEW PROBLEM
+
+im new
+
+im news answer
+
 \end{document}
