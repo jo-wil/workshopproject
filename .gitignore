@@ -2,4 +2,5 @@
 *.txt
 *.pdf
 *.log
+*.aux
 *.out
