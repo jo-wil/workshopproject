@@ -1,5 +1,0 @@
-$x^2$, solution1, 141, limits, 1
-$x^3$, solution2, 141, limits, 1
-$x^4$, solution3, 141, limits, 1
-problem4, solution4, 141, limits, 1
-problem5, solution5, 141, limits, 1
