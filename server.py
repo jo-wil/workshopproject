@@ -20,7 +20,6 @@ class Worksheet:
        user_data = web.input(worksheet = 'None')
        return w.refresh(user_data.worksheet)
        
-
 class Database:
     def GET(self):
        user_data = web.input(class_name = 'None', topic = 'None')
