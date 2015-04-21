@@ -45,16 +45,61 @@
             </div>
             <div id="tools-div" class="pure-u-1-5">
                <div>
-                  <div class="pure-form pure-form-stacked text-center padding">
+                  <div class="pure-form pure-form-stacked text-center small-padding">
                    <fieldset>
                        <legend> <h2> Tools </h2> </legend>
                        <button id="toggle-button" class="pure-button pure-button-primary"> View As PDF </button>
-                       <br><br><br><br><br>
-                       <h3> New Problem </h3>
-                       <textarea id="new-directions" class="max-width" placeholder="Directions"></textarea>
-                       <textarea id="new-problem" class="max-width" placeholder="Problem"></textarea>
-                       <textarea id="new-solution" class="max-width" placeholder="Solution"></textarea>
-                       <button id="add-button" class="pure-button button-success"> Add </button>
+                       <div id="edit-div">
+                          <br><br><br>
+                          <h3> New Problem </h3>
+                          <textarea id="new-directions" class="max-width" placeholder="Directions"></textarea>
+                          <textarea id="new-problem" class="max-width" placeholder="Problem"></textarea>
+                          <textarea id="new-solution" class="max-width" placeholder="Solution"></textarea>
+                          <button id="add-button" class="pure-button button-success"> Add </button>
+                          <br><br><br>
+                          <h3> Latex Help </h3>
+                          <table class="pure-table pure-table-bordered">
+                             <thead>
+                                <tr>
+                                   <th>Math</th>
+                                   <th>Latex</th>
+                                </tr>
+                             </thead>
+                             <tbody>
+                                <tr> 
+                                   <td> Integrals </td>
+                                   <td> \int_{lower}^{upper} </td>
+                                </tr>
+                                <tr> 
+                                   <td> Sum </td>
+                                   <td> \sum_{lower}^{upper}  </td>
+                                </tr>
+                                <tr> 
+                                   <td> Limit </td>
+                                   <td> \lim_{lower} </td>
+                                </tr>
+                             </tbody>
+                          </table>
+                       </div>
+                       <div id="format-div" class="hidden">
+                          <br><br><br>
+                          <h3> Options </h3>
+                          <input type="checkbox"> Show Solutions <br>
+                          <br><br><br>
+                          <label for="vertical-select">  <h3> Vertical Space </h3> </label>
+                          <select id="vertical-select" class="max-width">
+                             <option value="0.5">0.5cm</option>
+                             <option value="1">1cm</option>
+                             <option value="1.5">1.5cm</option>
+                             <option value="2">2cm</option>
+                             <option value="2.5">2.5cm</option>
+                             <option value="2">3cm</option>
+                             <option value="3.5">3.5cm</option>
+                             <option value="4">4cm</option>
+                             <option value="4.5">4.5cm</option>
+                             <option value="5">5cm</option>
+                          </select>
+                       </div>
                    </fieldset>
                   </div>
                </div>

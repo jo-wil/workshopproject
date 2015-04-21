@@ -8,7 +8,9 @@ Config = {
             
   topics141: [{'text': 'Limits', 'value': 'limits'}, 
               {'text': 'Derivatives', 'value': 'derivatives'},
-              {'text': 'Integrals','value': 'integrals'}]
+              {'text': 'Integrals','value': 'integrals'}],
+              
+  topics143: [{'text': 'Series', 'value': 'series'}]
 }
 
 /* UI Object */
@@ -159,7 +161,7 @@ Worksheet.renderLatex = function () {
    worksheet = $('#worksheet');
    worksheet.empty();
    
-   content = '\\documentclass{article}\n' +
+   content = '\\documentclass[12pt]{article}\n' +
              '\\title{' + Worksheet.title + '}\n' +
              '\\author{SWM}\n' +
              '\\begin{document}\n' +
@@ -168,15 +170,18 @@ Worksheet.renderLatex = function () {
    len = Worksheet.problems.length;          
    for (i = 0; i < len; i++) {
       p = Worksheet.problems[i];
-      content += p.directions + '\n\n';
-      content += p.problem + '\n\n';
-      content += p.solution + '\n\n';
+      content += p.directions + '\n\\vspace{1cm}\n\n';
+      content += p.problem + '\n\\vspace{1cm}\n\n';
+      content += p.solution + '\n\\vspace{3cm}\n\n';
    }
    
    content += '\\end{document}';   
    $.post("/worksheet", {worksheet: content}).done( function (data) {
-       console.log(data);
-       iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
+       if (data === '0') {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
+       } else {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
+       }
        worksheet.append(iframe);
    });
    
@@ -200,6 +205,15 @@ Listeners.classSelect = function () {
             topicSelect.append(option);
          }
          break;
+      case '143':
+         options = Config.topics143;
+         len = options.length
+         for (i = 0; i < len; i++) {
+            o = options[i];
+            option = $('<option></option>').attr('value',o.value).html(o.text);
+            topicSelect.append(option);
+         }
+         break;
    }
 }
 
@@ -211,9 +225,13 @@ Listeners.toggleButton = function () {
    if (Worksheet.state === 'HTML') {
       Worksheet.state = 'Latex';
       button.html('Edit Worksheet');
+      $('#format-div').toggleClass('hidden');
+      $('#edit-div').toggleClass('hidden');
    } else if (Worksheet.state === 'Latex') {
       Worksheet.state = 'HTML';
       button.html('View As PDF');
+      $('#format-div').toggleClass('hidden');
+      $('#edit-div').toggleClass('hidden');
    } else {
       console.log('Toggle Error');
    }
@@ -336,6 +354,8 @@ Listeners.editProblem = function () {
    saveButton = $('<button></button>').addClass('pure-button button-success margin').html('Save').on('click', Listeners.saveProblem);
    cancelButton = $('<button></button>').addClass('pure-button button-warning margin').html('Cancel').on('click', Listeners.cancel);
    deleteButton = $('<button></button>').addClass('pure-button button-error margin').html('Delete').on('click', Listeners.deleteProblem);
+   upButton = $('<button></button>').addClass('pure-button margin right').html('Move Up').on('click', null);
+   downButton = $('<button></button>').addClass('pure-button margin right').html('Move Down').on('click', null);
    
    div.append(editDirections);
    div.append(editProblem);
@@ -344,6 +364,8 @@ Listeners.editProblem = function () {
    div.append(saveButton);
    div.append(cancelButton);
    div.append(deleteButton);
+   div.append(upButton);
+   div.append(downButton);
 }
 
 Listeners.saveTitle = function () {

@@ -22,18 +22,15 @@ class DB:
            result.append({'problem':row[0],'solution':row[1]})
         return json.dumps(result)
       
-    def parse_file(self, filename):
-        f = open(filename,'r')
-        data_file = f.read()
-        f.close()
-        data_rows = data_file.split('\n')
+    def parse_data(self, data):
+        data_rows = data.split('\n')
       
         # data validation and normalization
         index = 0
         valid_rows = []
         for row in data_rows:
             row = row.split(',')
-            if len(row) == 5:
+            if len(row) == 5: # to get rid of the last line
                 problem = row[0]
                 problem = problem.strip()
             
@@ -43,10 +40,9 @@ class DB:
                 class_num = row[2]
                 class_num = class_num.strip()
                 try:
-                   class_num = int(class_num)
+                    class_num = int(class_num)
                 except:
-                   print 'Error parsing class num for row ' + str(index)
-                   sys.exit(1)
+                    return 'Error parsing class num for row ' + str(index)
                    
                 topic = row[3]
                 topic = topic.strip()
@@ -56,12 +52,9 @@ class DB:
                 level = row[4]
                 level.strip()
                 try:
-                   level = int(level)
+                    level = int(level)
                 except:
-                   print 'Error parsing level for row ' + str(index)
-                   sys.exit(1)
-                
-                print problem, solution, class_num, topic, level
+                    return 'Error parsing level for row ' + str(index)
                 
                 valid_rows.append([problem, solution, class_num, topic, level])
                 index += 1
@@ -72,17 +65,21 @@ class DB:
         
         for row in valid_rows:
             try:
-               c.execute("INSERT INTO Problems VALUES(?,?,?,?,?)", (row[0],row[1],row[2],row[3],row[4]))
+                c.execute("INSERT INTO Problems VALUES(?,?,?,?,?)", (row[0],row[1],row[2],row[3],row[4]))
             except sqlite3.Error, e:
-                print "Error %s:" % e.args[0]
-                sys.exit(1)
+                return 'Error %s:' % e.args[0]
         
         conn.commit()
         conn.close()
 
+        return 'Okay'
+
 def upload():
-    db = DB()      
-    db.parse_file(sys.argv[1])
+    db = DB()    
+    f = open(sys.argv[1],'r')
+    data_file = f.read()
+    f.close()
+    print db.parse_data(data_file)
    
 if __name__ == "__main__" and len(sys.argv) == 2:
     upload()
