@@ -20,6 +20,7 @@ UI.init = function () {
 
    UI.initSelect();
    UI.initListeners();
+   UI.initTools();
    MathDisplay.init();
    Worksheet.render();
 }
@@ -29,6 +30,15 @@ UI.initListeners = function () {
    $('#search-button').on('click',Listeners.searchButton);
    $('#add-button').on('click',Listeners.addNewButton);
    $('#toggle-button').on('click',Listeners.toggleButton);
+   $('#solutions-checkbox').on('change',Listeners.solutionsCheckbox);
+   $('#vertical-select').on('change',Listeners.verticalSelect);
+}
+
+UI.initTools = function () {
+   
+   $('#solutions-checkbox').attr('checked', false);
+   $('#vertical-select').val('1');
+   Worksheet.verticalSpace = '1';
 }
 
 UI.initSelect = function () {
@@ -81,6 +91,8 @@ Worksheet = {}
 Worksheet.title = 'Worksheet';
 Worksheet.problems = [];
 Worksheet.state = 'HTML'; // other option is Latex
+Worksheet.solutions = false; // denotes whether the solutions should be displayed in the worksheet 
+Worksheet.verticalSpace = '1';
 Worksheet.editing = false; // mutex so only one element is edited at a time
 
 Worksheet.renderHTMLHeader = function (worksheet) {
@@ -171,8 +183,12 @@ Worksheet.renderLatex = function () {
    for (i = 0; i < len; i++) {
       p = Worksheet.problems[i];
       content += p.directions + '\n\\vspace{1cm}\n\n';
-      content += p.problem + '\n\\vspace{1cm}\n\n';
-      content += p.solution + '\n\\vspace{3cm}\n\n';
+      if (Worksheet.solutions) {
+         content += p.problem + '\n\\vspace{1cm}\n\n';
+         content += p.solution + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      } else {
+         content += p.problem + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      }
    }
    
    content += '\\end{document}';   
@@ -238,6 +254,8 @@ Listeners.toggleButton = function () {
    Worksheet.render();
 }
 
+/* ----- Begin Left Colum Listeners ------ */
+
 Listeners.searchButton = function () {
    
    var i, len, classSelect, topicSelect, classVal, topicVal, className, topicText, result, resultList, resultDiv, resultCount, problemDiv;
@@ -285,6 +303,10 @@ Listeners.addButton = function () {
    Worksheet.render();
 }
 
+/* ----- End Left Colum Listeners ------ */
+
+/* ----- Begin Right Colum Listeners ------ */
+
 Listeners.addNewButton = function () {
    
    var directions, problem, solution;
@@ -301,6 +323,27 @@ Listeners.addNewButton = function () {
    
    Worksheet.render();
 }
+
+Listeners.solutionsCheckbox = function () {
+
+   if (this.checked === true) {
+      Worksheet.solutions = true;
+   } else {
+      Worksheet.solutions = false;  
+   }
+   Worksheet.render();
+}
+
+Listeners.verticalSelect = function () {
+
+   console.log(this.value);
+   Worksheet.verticalSpace = this.value;
+   Worksheet.render();
+}
+
+/* ----- End Right Colum Listeners ------ */
+
+/* ----- Begin Middle Column Listeners ------ */
 
 Listeners.editTitle = function () {
    
@@ -341,7 +384,7 @@ Listeners.editProblem = function () {
    }
    
    div = $(this);
-   index = div.attr('index');
+   index = parseInt(div.attr('index'),10);
    p = Worksheet.problems[index];
    
    div.empty();
@@ -354,8 +397,8 @@ Listeners.editProblem = function () {
    saveButton = $('<button></button>').addClass('pure-button button-success margin').html('Save').on('click', Listeners.saveProblem);
    cancelButton = $('<button></button>').addClass('pure-button button-warning margin').html('Cancel').on('click', Listeners.cancel);
    deleteButton = $('<button></button>').addClass('pure-button button-error margin').html('Delete').on('click', Listeners.deleteProblem);
-   upButton = $('<button></button>').addClass('pure-button margin right').html('Move Up').on('click', null);
-   downButton = $('<button></button>').addClass('pure-button margin right').html('Move Down').on('click', null);
+   upButton = $('<button></button>').addClass('pure-button margin').html('Move Up').on('click', Listeners.moveUp);
+   downButton = $('<button></button>').addClass('pure-button margin').html('Move Down').on('click', Listeners.moveDown);
    
    div.append(editDirections);
    div.append(editProblem);
@@ -380,7 +423,7 @@ Listeners.saveProblem = function () {
    var div, directions, problem, solution, index;
    
    div = $(this).parent();
-   index = div.attr('index');
+   index = parseInt(div.attr('index'),10);
    
    directions = $('#new-directions').val();
    problem = $('#new-problem').val();
@@ -403,7 +446,7 @@ Listeners.deleteProblem = function () {
    var div, directions, problem, solution, index;
    
    div = $(this).parent();
-   index = div.attr('index');
+   index = parseInt(div.attr('index'),10);
  
    Worksheet.problems.splice(index, 1);   
    
@@ -411,6 +454,49 @@ Listeners.deleteProblem = function () {
    Worksheet.render();
 }
 
+Listeners.moveUp = function () {
+
+   var div, index, tmp;
+
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   if (index === 0) {
+      return;
+   }
+
+   tmp = Worksheet.problems[index];
+   Worksheet.problems[index] = Worksheet.problems[index - 1];
+   Worksheet.problems[index - 1] = tmp;
+   
+   Worksheet.editing = false;
+   Worksheet.render();
+   div.click();
+}
+
+Listeners.moveDown = function () {
+
+   var div, index, tmp;
+
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   if (index === Worksheet.problems.length - 1) {
+      return;
+   }
+
+   tmp = Worksheet.problems[index];
+   Worksheet.problems[index] = Worksheet.problems[index + 1];
+   Worksheet.problems[index + 1] = tmp;
+   
+   Worksheet.editing = false;
+   Worksheet.render();
+}
+
+/* ----- End Middle Column Listeners ------ */
+
+
+/* MAIN */
 $(document).ready(function() {
    UI.init();
 });
