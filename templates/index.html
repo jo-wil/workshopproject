@@ -50,36 +50,39 @@
                        <legend> <h2> Tools </h2> </legend>
                        <button id="toggle-button" class="pure-button pure-button-primary"> View As PDF </button>
                        <div id="edit-div">
-                          <br><br><br>
-                          <h3> New Problem </h3>
-                          <textarea id="new-directions" class="max-width" placeholder="Directions"></textarea>
-                          <textarea id="new-problem" class="max-width" placeholder="Problem"></textarea>
-                          <textarea id="new-solution" class="max-width" placeholder="Solution"></textarea>
-                          <button id="add-button" class="pure-button button-success"> Add </button>
-                          <br><br><br>
-                          <h3> Latex Help </h3>
-                          <table class="pure-table pure-table-bordered">
-                             <thead>
-                                <tr>
-                                   <th>Math</th>
-                                   <th>Latex</th>
-                                </tr>
-                             </thead>
-                             <tbody>
-                                <tr> 
-                                   <td> Integral </td>
-                                   <td> \int_{lower}^{upper} </td>
-                                </tr>
-                                <tr> 
-                                   <td> Sum </td>
-                                   <td> \sum_{lower}^{upper}  </td>
-                                </tr>
-                                <tr> 
-                                   <td> Limit </td>
-                                   <td> \lim_{lower} </td>
-                                </tr>
-                             </tbody>
-                          </table>
+                          <br>
+                          <h3 id="latex-help-label" class="click-me"> Latex Help </h3>
+                          <div id="help-table" class="hidden">
+                             <table class="pure-table pure-table-bordered">
+                                <thead>
+                                   <tr>
+                                      <th>Math</th>
+                                      <th>Latex</th>
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                   <tr> 
+                                      <td> Integral </td>
+                                      <td> \int_{lower}^{upper} </td>
+                                   </tr>
+                                   <tr> 
+                                      <td> Sum </td>
+                                      <td> \sum_{lower}^{upper}  </td>
+                                   </tr>
+                                   <tr> 
+                                      <td> Limit </td>
+                                      <td> \lim_{lower} </td>
+                                   </tr>
+                                </tbody>
+                             </table>
+                          </div>
+                          <h3 id="add-problem-label" class="click-me"> New Problem </h3>
+                          <div id="add-problem" class="hidden">
+                             <textarea id="new-directions" class="max-width" placeholder="Directions"></textarea>
+                             <textarea id="new-problem" class="max-width" placeholder="Problem"></textarea>
+                             <textarea id="new-solution" class="max-width" placeholder="Solution"></textarea>
+                             <button id="add-button" class="pure-button button-success"> Add </button>
+                          </div>
                        </div>
                        <div id="format-div" class="hidden">
                           <br><br><br>
@@ -88,6 +91,7 @@
                           <br><br><br>
                           <label for="vertical-select">  <h3> Vertical Space </h3> </label>
                           <select id="vertical-select" class="max-width">
+                             <option value="0">0cm</option>
                              <option value="1">1cm</option>
                              <option value="2">2cm</option>
                              <option value="2">3cm</option>

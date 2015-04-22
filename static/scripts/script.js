@@ -32,6 +32,8 @@ UI.initListeners = function () {
    $('#toggle-button').on('click',Listeners.toggleButton);
    $('#solutions-checkbox').on('change',Listeners.solutionsCheckbox);
    $('#vertical-select').on('change',Listeners.verticalSelect);
+   $('#latex-help-label').on('click',Listeners.displayLabel);
+   $('#add-problem-label').on('click',Listeners.addLabel);
 }
 
 UI.initTools = function () {
@@ -335,10 +337,16 @@ Listeners.solutionsCheckbox = function () {
 }
 
 Listeners.verticalSelect = function () {
-
-   console.log(this.value);
    Worksheet.verticalSpace = this.value;
    Worksheet.render();
+}
+                          
+Listeners.displayLabel = function () {
+   $('#help-table').toggleClass('hidden');
+}
+
+Listeners.addLabel = function () {
+   $('#add-problem').toggleClass('hidden');
 }
 
 /* ----- End Right Colum Listeners ------ */

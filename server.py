@@ -1,12 +1,11 @@
 import database
 import worksheet
 import web
-import os
 
 db = database.DB()
 w = worksheet.Worksheet()
 
-web.config.debug = False
+#web.config.debug = False
 render = web.template.render('templates/')
         
 urls = (
@@ -16,7 +15,7 @@ urls = (
 )
 
 app = web.application(urls, globals())
-session = web.session.Session(app, web.session.DiskStore('sessions'), initializer={'admin': False})
+#session = web.session.Session(app, web.session.DiskStore('sessions'), initializer={'admin': False})
 
 class Worksheet:
     def POST(self):
