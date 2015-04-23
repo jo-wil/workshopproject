@@ -32,8 +32,10 @@ UI.initListeners = function () {
    $('#toggle-button').on('click',Listeners.toggleButton);
    $('#solutions-checkbox').on('change',Listeners.solutionsCheckbox);
    $('#vertical-select').on('change',Listeners.verticalSelect);
-   $('#latex-help-label').on('click',Listeners.displayLabel);
-   $('#add-problem-label').on('click',Listeners.addLabel);
+   $('#latex-help-label').on('click',Listeners.displayTool);
+   $('#add-problem-label').on('click',Listeners.displayTool);
+   $('#options-label').on('click',Listeners.displayTool);
+   $('#vertical-select-label').on('click',Listeners.displayTool);
 }
 
 UI.initTools = function () {
@@ -341,12 +343,13 @@ Listeners.verticalSelect = function () {
    Worksheet.render();
 }
                           
-Listeners.displayLabel = function () {
-   $('#help-table').toggleClass('hidden');
-}
+Listeners.displayTool = function () {
+   
+   var id;
+   
+   id = $(this).attr('for');
 
-Listeners.addLabel = function () {
-   $('#add-problem').toggleClass('hidden');
+   $('#'+id).toggleClass('hidden');
 }
 
 /* ----- End Right Colum Listeners ------ */
