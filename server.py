@@ -15,6 +15,7 @@ urls = (
 )
 
 app = web.application(urls, globals())
+wsgi_app = app.wsgifunc()
 #session = web.session.Session(app, web.session.DiskStore('sessions'), initializer={'admin': False})
 
 class Worksheet:
