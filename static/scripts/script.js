@@ -35,7 +35,8 @@ UI.initListeners = function () {
    $('#latex-help-label').on('click',Listeners.displayTool);
    $('#add-problem-label').on('click',Listeners.displayTool);
    $('#options-label').on('click',Listeners.displayTool);
-   $('#vertical-select-label').on('click',Listeners.displayTool);
+   $('#latex-edit-button').on('click',Listeners.editButton);
+   $('#refresh-button').on('click',Listeners.refreshButton);
 }
 
 UI.initTools = function () {
@@ -151,7 +152,7 @@ Worksheet.render = function () {
    if (Worksheet.state === 'HTML') {
       Worksheet.renderHTML();
    } else if (Worksheet.state === 'Latex') {
-      Worksheet.renderLatex();
+      Worksheet.renderLatex('worksheet', Worksheet.createLatex());
    } else {
       console.log('Rendering Error!');
    }
@@ -170,13 +171,10 @@ Worksheet.renderHTML = function () {
    MathDisplay.parseLatex();
 }
 
-Worksheet.renderLatex = function () {
+Worksheet.createLatex = function () {
 
-   var content, worksheet, iframe, i, len, p;
-   
-   worksheet = $('#worksheet');
-   worksheet.empty();
-   
+   var content, i , len, p;
+
    content = '\\documentclass[12pt]{article}\n' +
              '\\title{' + Worksheet.title + '}\n' +
              '\\author{SWM}\n' +
@@ -195,7 +193,18 @@ Worksheet.renderLatex = function () {
       }
    }
    
-   content += '\\end{document}';   
+   content += '\\end{document}';
+
+   return content;
+}
+
+Worksheet.renderLatex = function (id, content) {
+
+   var worksheet, iframe;
+   
+   worksheet = $('#'+id);
+   worksheet.empty();
+      
    $.post("/worksheet", {worksheet: content}).done( function (data) {
        if (data === '0') {
           iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
@@ -247,11 +256,15 @@ Listeners.toggleButton = function () {
       button.html('Edit Worksheet');
       $('#format-div').toggleClass('hidden');
       $('#edit-div').toggleClass('hidden');
+      $('#search-button').toggleClass('hidden');
+      $('#result-div').toggleClass('hidden');
    } else if (Worksheet.state === 'Latex') {
       Worksheet.state = 'HTML';
       button.html('View As PDF');
       $('#format-div').toggleClass('hidden');
       $('#edit-div').toggleClass('hidden');
+      $('#search-button').toggleClass('hidden');
+      $('#result-div').toggleClass('hidden');
    } else {
       console.log('Toggle Error');
    }
@@ -351,6 +364,18 @@ Listeners.displayTool = function () {
 
    $('#'+id).toggleClass('hidden');
 }
+Listeners.editButton = function () {
+
+   var content;
+
+   $('#build-div').addClass('hidden');
+   $('#edit-latex-div').removeClass('hidden');
+   
+   content = Worksheet.createLatex();
+   
+   $('#latex-textarea').val(content);
+   Worksheet.renderLatex('latex-iframe', Worksheet.createLatex());
+}
 
 /* ----- End Right Colum Listeners ------ */
 
@@ -408,8 +433,8 @@ Listeners.editProblem = function () {
    saveButton = $('<button></button>').addClass('pure-button button-success margin').html('Save').on('click', Listeners.saveProblem);
    cancelButton = $('<button></button>').addClass('pure-button button-warning margin').html('Cancel').on('click', Listeners.cancel);
    deleteButton = $('<button></button>').addClass('pure-button button-error margin').html('Delete').on('click', Listeners.deleteProblem);
-   upButton = $('<button></button>').addClass('pure-button margin').html('Move Up').on('click', Listeners.moveUp);
-   downButton = $('<button></button>').addClass('pure-button margin').html('Move Down').on('click', Listeners.moveDown);
+   upButton = $('<button></button>').addClass('pure-button pure-button-primary margin').html('Move Up').on('click', Listeners.moveUp);
+   downButton = $('<button></button>').addClass('pure-button pure-button-primary margin').html('Move Down').on('click', Listeners.moveDown);
    
    div.append(editDirections);
    div.append(editProblem);
@@ -506,6 +531,17 @@ Listeners.moveDown = function () {
 
 /* ----- End Middle Column Listeners ------ */
 
+/* ----- Begin Edit Page Listeners ----- */
+Listeners.refreshButton = function () {
+   
+   var content;
+   
+   content = $('#latex-textarea').val();
+   
+   console.log()
+   
+   Worksheet.renderLatex('latex-iframe', content);
+}
 
 /* MAIN */
 $(document).ready(function() {
