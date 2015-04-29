@@ -369,7 +369,7 @@ Listeners.editButton = function () {
    var content;
 
    $('#build-div').addClass('hidden');
-   $('#edit-latex-div').removeClass('hidden');
+   $('#latex-div').removeClass('hidden');
    
    content = Worksheet.createLatex();
    
