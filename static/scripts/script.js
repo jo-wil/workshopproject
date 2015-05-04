@@ -5,12 +5,16 @@ Config = {
   classes: [{'text': 'Math 141', 'value': '141'}, 
             {'text': 'Math 142', 'value': '142'}, 
             {'text': 'Math 143', 'value': '143'}],
-            
+  
   topics141: [{'text': 'Limits', 'value': 'limits'}, 
               {'text': 'Derivatives', 'value': 'derivatives'},
               {'text': 'Integrals','value': 'integrals'}],
               
-  topics143: [{'text': 'Series', 'value': 'series'}]
+  topics142: [{'text': 'asdf', 'value': 'asdf'},
+              {'text': 'asdf', 'value': 'hgsd'}],                                       
+  
+  topics143: [{'text': 'gfsd', 'value': 'erwt'},
+              {'text': 'wert', 'value': 'ewrt'}]  
 }
 
 /* UI Object */
@@ -29,11 +33,14 @@ UI.initListeners = function () {
    $('#class-select').on('change',Listeners.classSelect);
    $('#search-button').on('click',Listeners.searchButton);
    $('#add-button').on('click',Listeners.addNewButton);
+   $('#save-button').on('click',Listeners.saveButton);
+   $('#load-button').on('click',Listeners.loadButton);
    $('#toggle-button').on('click',Listeners.toggleButton);
    $('#solutions-checkbox').on('change',Listeners.solutionsCheckbox);
    $('#vertical-select').on('change',Listeners.verticalSelect);
    $('#latex-help-label').on('click',Listeners.displayTool);
    $('#add-problem-label').on('click',Listeners.displayTool);
+   $('#manage-worksheet-label').on('click',Listeners.displayTool);
    $('#options-label').on('click',Listeners.displayTool);
    $('#latex-edit-button').on('click',Listeners.editButton);
    $('#refresh-button').on('click',Listeners.refreshButton);
@@ -227,22 +234,19 @@ Listeners.classSelect = function () {
    switch (this.value) {
       case '141':
          options = Config.topics141;
-         len = options.length
-         for (i = 0; i < len; i++) {
-            o = options[i];
-            option = $('<option></option>').attr('value',o.value).html(o.text);
-            topicSelect.append(option);
-         }
          break;
+      case '142':
+         options = Config.topics142;
+         break;   
       case '143':
          options = Config.topics143;
-         len = options.length
-         for (i = 0; i < len; i++) {
-            o = options[i];
-            option = $('<option></option>').attr('value',o.value).html(o.text);
-            topicSelect.append(option);
-         }
          break;
+   }
+   len = options.length
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      topicSelect.append(option);
    }
 }
 
@@ -319,6 +323,73 @@ Listeners.addButton = function () {
    Worksheet.problems.push({'directions':'', 'problem':problem, 'solution':solution})
    Worksheet.render();
 }
+
+Listeners.saveButton = function () {
+   
+   var resultMessage, resultDiv;
+
+   resultDiv = $('#saved-worksheets');
+   resultDiv.empty(); 
+
+   localStorage.setItem(Worksheet.title, JSON.stringify(Worksheet.problems));
+   
+   resultMessage = $('<p></p>').html('Worksheet saved!');
+   resultDiv.append(resultMessage);
+}
+
+Listeners.loadButton = function () {
+   
+   var i, len, worksheetDiv, worksheetName, reloadButton, deleteButton, resultDiv, emptyMessage;
+   
+   resultDiv = $('#saved-worksheets');
+   resultDiv.empty(); 
+   
+   len = localStorage.length;
+   
+   if (len === 0) {
+      emptyMessage = $('<p></p>').html('There are no saved worksheets');
+      resultDiv.append(emptyMessage);
+   }
+   
+   for (i = 0; i < len; i++){
+      worksheetDiv = $('<div></div>').addClass('padding');
+      worksheetName = $('<span></span>').addClass('padding').html(localStorage.key(i));
+      reloadButton = $('<button></button>').addClass('add-button pure-button button-success margin').html('Reload');
+      deleteButton = $('<button></button>').addClass('add-button pure-button button-error margin').html('Delete');
+      worksheetDiv.append(worksheetName);
+      worksheetDiv.append(reloadButton);
+      worksheetDiv.append(deleteButton);
+      resultDiv.append(worksheetDiv);
+      reloadButton.on('click',Listeners.reloadButton);  
+      deleteButton.on('click',Listeners.deleteButton);
+        
+   }
+}
+
+Listeners.reloadButton = function () {
+
+   var key;
+
+   key = $(this).parent().find('span').html();
+
+   Worksheet.title = key;
+   Worksheet.problems = JSON.parse(localStorage.getItem(key));
+
+   Worksheet.render();
+}
+
+Listeners.deleteButton = function () {
+
+   var key;
+
+   key = $(this).parent().find('span').html();
+   
+   localStorage.removeItem(key);
+   
+   Listeners.loadButton();
+
+}
+
 
 /* ----- End Left Colum Listeners ------ */
 
