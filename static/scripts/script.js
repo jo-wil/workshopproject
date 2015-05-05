@@ -156,6 +156,8 @@ Worksheet.renderHTMLContent = function (worksheet) {
 
 Worksheet.render = function () {
 
+   Worksheet.editing = false;
+   
    if (Worksheet.state === 'HTML') {
       Worksheet.renderHTML();
    } else if (Worksheet.state === 'Latex') {
@@ -347,7 +349,7 @@ Listeners.loadButton = function () {
    len = localStorage.length;
    
    if (len === 0) {
-      emptyMessage = $('<p></p>').html('There are no saved worksheets');
+      emptyMessage = $('<p></p>').html('There are no saved worksheets.');
       resultDiv.append(emptyMessage);
    }
    
@@ -456,11 +458,10 @@ Listeners.editTitle = function () {
    
    var div, oldText, editTitle, saveButton, cancelButton;
    
-   if (Worksheet.editing === false) {
-      Worksheet.editing = true;
-   } else {
+   if (Worksheet.editing === true) {
       return;
    }
+   Worksheet.editing = true;
    
    div = $(this);
    oldText = div.children().html();
@@ -484,11 +485,10 @@ Listeners.editProblem = function () {
    
    var div, index, editDirections, editProblem, editSolution, saveButton, cancelButton, deleteButton, p;
    
-   if (Worksheet.editing === false) {
-      Worksheet.editing = true;
-   } else {
+   if (Worksheet.editing === true) {
       return;
    }
+   Worksheet.editing = true;
    
    div = $(this);
    index = parseInt(div.attr('index'),10);
@@ -498,9 +498,9 @@ Listeners.editProblem = function () {
    div.unbind('click');
    div.addClass('pure-form');
     
-   editDirections = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'new-directions','placeholder':'directions'}).val(p.directions);
-   editProblem = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'new-problem','placeholder':'problem'}).val(p.problem);
-   editSolution = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'new-solution','placeholder':'solution'}).val(p.solution);
+   editDirections = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'edit-directions','placeholder':'directions'}).val(p.directions);
+   editProblem = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'edit-problem','placeholder':'problem'}).val(p.problem);
+   editSolution = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'edit-solution','placeholder':'solution'}).val(p.solution);
    saveButton = $('<button></button>').addClass('pure-button button-success margin').html('Save').on('click', Listeners.saveProblem);
    cancelButton = $('<button></button>').addClass('pure-button button-warning margin').html('Cancel').on('click', Listeners.cancel);
    deleteButton = $('<button></button>').addClass('pure-button button-error margin').html('Delete').on('click', Listeners.deleteProblem);
@@ -532,19 +532,17 @@ Listeners.saveProblem = function () {
    div = $(this).parent();
    index = parseInt(div.attr('index'),10);
    
-   directions = $('#new-directions').val();
-   problem = $('#new-problem').val();
-   solution = $('#new-solution').val();
+   directions = $('#edit-directions').val();
+   problem = $('#edit-problem').val();
+   solution = $('#edit-solution').val();
    
    Worksheet.problems[index] = {'directions':directions,'problem':problem,'solution':solution};
    
-   Worksheet.editing = false;
    Worksheet.render();
 }
 
 Listeners.cancel = function () {
    
-   Worksheet.editing = false;
    Worksheet.render();
 }
 
@@ -557,7 +555,6 @@ Listeners.deleteProblem = function () {
  
    Worksheet.problems.splice(index, 1);   
    
-   Worksheet.editing = false;
    Worksheet.render();
 }
 
@@ -576,9 +573,7 @@ Listeners.moveUp = function () {
    Worksheet.problems[index] = Worksheet.problems[index - 1];
    Worksheet.problems[index - 1] = tmp;
    
-   Worksheet.editing = false;
    Worksheet.render();
-   div.click();
 }
 
 Listeners.moveDown = function () {
@@ -596,7 +591,6 @@ Listeners.moveDown = function () {
    Worksheet.problems[index] = Worksheet.problems[index + 1];
    Worksheet.problems[index + 1] = tmp;
    
-   Worksheet.editing = false;
    Worksheet.render();
 }
 
