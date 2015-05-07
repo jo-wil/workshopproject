@@ -1,4 +1,38 @@
-var UI, Search, Display, Tools, Edit, Worksheet, MathDisplay;
+var Config, UI, Search, Display, Tools, Edit, Worksheet, MathDisplay;
+
+/* Config Object */
+Config = {
+  classes: [{'text': 'Math 141', 'value': '141'}, 
+            {'text': 'Math 142', 'value': '142'}, 
+            {'text': 'Math 143', 'value': '143'}],
+  
+  topics141: [{'text': 'Limits', 'value': 'limits'}, 
+              {'text': 'Derivatives', 'value': 'derivatives'},
+              {'text': 'Integrals','value': 'integrals'}],
+              
+  topics142: [{'text': 'asdf', 'value': 'asdf'},
+              {'text': 'asdf', 'value': 'hgsd'}],                                       
+  
+  topics143: [{'text': 'gfsd', 'value': 'erwt'},
+              {'text': 'wert', 'value': 'ewrt'}]  
+}
+
+/* MathDisplay Object */
+
+MathDisplay = {}
+
+MathDisplay.init = function () {
+   // Config MathJax
+   MathJax.Hub.Config({
+      showProcessingMessages: true,
+      showMathMenu: false,
+      tex2jax: { inlineMath: [['$','$']] }
+   });
+}
+
+MathDisplay.parseLatex = function () {
+   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+}
 
 /* Main UI Object */
 
@@ -11,6 +45,7 @@ UI.init = function () {
    
    this.state = 'build'; // other options are view and edit
 
+   MathDisplay.init();
    Worksheet.init();
    Search.init();
    Display.init();
@@ -58,28 +93,75 @@ Search.init = function () {
    content.addClass('pure-u-1-4');
    
    this.content = content;
-   this.changed = true;
 }
 
 Search.render = function () {
    
-   var div, classSelect, topicSelect;
+   var div, classSelect, topicSelect, classSelect, topicSelect, options, o, i, len;
+   
+   
+   var i, len, o, option, options, topicSelect, classSelect;
+   
+   classSelect = $('#class-select');
+   classSelect.empty();
+   
+   options = Config.classes;
+   len = options.length;
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      classSelect.append(option);
+   }
+   
+   topicSelect = $('#topic-select');
+   topicSelect.empty();
+   
+   options = Config.topics141;
+   len = options.length;
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      topicSelect.append(option);
+   }
+   
+   
    
    div = $('<div></div>');
    div.addClass('padding text-center pure-form pure-form-stacked');
    
    div.append($('<h2></h2>').text('Search'));
-   div.append($('<hr>'));
+   div.append('<hr>');
    
    if (UI.state === 'build') {
    
       div.append($('<label></label>').text('Class'));
-      div.append($('<select></select>').addClass('max-width').attr('id','class-select'));
+      classSelect = $('<select></select>');
+      classSelect.addClass('max-width')
+                 .attr('id', 'class-select')
+                 .on('change', Search.Listeners.classSelect);
+      
+      options = Config.classes;
+      len = options.length;
+      for (i = 0; i < len; i++) {
+         o = options[i];
+         classSelect.append($('<option></option>').attr('value',o.value).html(o.text));
+      }
+      
+      div.append(classSelect);
       
       div.append($('<label></label>').text('Topic'));
-      div.append($('<select></select>').addClass('max-width').attr('id','topic-select'));
+      topicSelect = $('<select></select>').addClass('max-width').attr('id','topic-select');
       
-      div.append($('<br>'));
+      options = Config.topics141;
+      len = options.length;
+      for (i = 0; i < len; i++) {
+         o = options[i];
+         topicSelect.append($('<option></option>').attr('value',o.value).html(o.text));
+      }
+      
+      div.append(topicSelect);
+      
+      div.append('<br>');
       div.append($('<button></button>')
                  .addClass('pure-button button-success')
                  .text('Search')
@@ -94,19 +176,54 @@ Search.render = function () {
 
 Search.Listeners = {}
 
+Search.Listeners.classSelect = function () {
+  
+   var i, len, o, option, options, topicSelect;
+   topicSelect = $('#topic-select');
+   topicSelect.empty();
+   switch (this.value) {
+      case '141':
+         options = Config.topics141;
+         break;
+      case '142':
+         options = Config.topics142;
+         break;   
+      case '143':
+         options = Config.topics143;
+         break;
+   }
+   len = options.length
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      topicSelect.append(option);
+   }
+}
+
 Search.Listeners.searchButton = function () {
    
-   var results, r, container, i, len;
+   var classSelect, topicSelect, classVal, topicVal, classText, topicText, resultMessage, results, r, container, i, len;
+   
+   classSelect = $('#class-select');
+   topicSelect = $('#topic-select');
+   classVal = classSelect.val();
+   topicVal = topicSelect.val();
+   classText = classSelect.children("option:selected").html();
+   topicText = topicSelect.children("option:selected").html();
    
    container = $('#search-results');
    container.empty();
    container.append('<br>');
    
-   $.get('/database', {'class_name': '141', 'topic': 'limits'}, function (data) {
+   $.get('/database', {'class_name': classVal, 'topic': topicVal}, function (data) {
       
       results = JSON.parse(data);
       
       len = results.length;
+      
+      resultMessage = $('<p></p>').html('Search for ' + classText + ' ' + topicText + ' returned ' + len + ' problems.');
+      container.append(resultMessage);
+      
       for (i = 0; i < len; i++) {
          r = results[i];
          container.append($('<span></span>').addClass('margin').html(r.problem));
@@ -115,8 +232,9 @@ Search.Listeners.searchButton = function () {
                           .attr({'problem':r.problem, 'solution':r.solution})
                           .text('Add')
                           .on('click', Search.Listeners.addButton));
-         container.append($('<br>'))
+         container.append('<br>')
       }
+      MathDisplay.parseLatex();
    });
 }
 
@@ -147,45 +265,90 @@ Display.init = function () {
    content.addClass('pure-u-1-2');
    
    this.content = content;
-   this.changed = true;
 }
 
 Display.render = function () {
-   
-   var div, iframe, header, i, len, p, container, directions, problem, solution;
+     
+   if (UI.state === 'build') {
+      Display.renderBuild();   
+      MathDisplay.parseLatex();
+   }
+   if (UI.state === 'view') {
+      Display.renderView();
+   }
+}
+
+Display.renderBuild = function () {
+
+   var div, header, i, len, p, container, directions, problem, solution;
+
+   Worksheet.editing = false;
    
    div = $('<div></div>');
    div.addClass('margin border padding max-height');
+         
+   header = $('<div></div>');
+   header.addClass('text-center click-me');
+   header.append($('<h1></h1>').text(Worksheet.title));
+   div.append(header);
+   header.on('click', Display.Listeners.editTitle);
    
-   if (UI.state === 'build') {
-      
-      header = $('<div></div>');
-      header.addClass('text-center click-me');
-      header.append($('<h1></h1>').text(Worksheet.title));
-      div.append(header);
-      header.on('click', Display.Listeners.editTitle);
-      
-      len = Worksheet.problems.length;
-      
-      for (i = 0; i < len; i++) {
-         p = Worksheet.problems[i];
-         container = $('<div></div>').addClass('padding click-me').attr('index',i);
-         container.append($('<p></p>').html('Directions: ' + p.directions));
-         container.append($('<p></p>').html('Problem: ' + p.problem));
-         container.append($('<p></p>').html('Solution: ' + p.solution));
-         div.append(container);
-      }
-      
-      container = $('<div></div>');
-      container.addClass('padding').attr('id','worksheet-problems');
+   len = Worksheet.problems.length;
+   
+   for (i = 0; i < len; i++) {
+      p = Worksheet.problems[i];
+      container = $('<div></div>')
+                  .addClass('padding click-me')
+                  .attr('index',i)
+                  .on('click', Display.Listeners.editProblem);
+      container.append($('<p></p>').html('Directions: ' + p.directions));
+      container.append($('<p></p>').html('Problem: ' + p.problem));
+      container.append($('<p></p>').html('Solution: ' + p.solution));
       div.append(container);
+   }
    
+   container = $('<div></div>');
+   container.addClass('padding').attr('id','worksheet-problems');
+   div.append(container);
+   
+   this.content.empty();
+   this.content.append(div);
+}
+
+Display.renderView = function () {
+
+   var div, content, i , len, p;
+
+   div = $('<div></div>');
+   div.addClass('margin border padding max-height');
+
+   content = '\\documentclass[12pt]{article}\n' +
+             '\\title{' + Worksheet.title + '}\n' +
+             '\\author{SWM}\n' +
+             '\\begin{document}\n' +
+             '\\maketitle\n';
+             
+   len = Worksheet.problems.length;          
+   for (i = 0; i < len; i++) {
+      p = Worksheet.problems[i];
+      content += p.directions + '\n\\vspace{1cm}\n\n';
+      if (Worksheet.solutions) {
+         content += p.problem + '\n\\vspace{1cm}\n\n';
+         content += p.solution + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      } else {
+         content += p.problem + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      }
    }
-   if (UI.state === 'view') {
-      iframe = $('<iframe></iframe>');
-      iframe.addClass('max-height max-width').attr('src','/static/worksheets/worksheet.txt');
-      div.append(iframe);
-   }
+   content += '\\end{document}';
+      
+   $.post("/worksheet", {worksheet: content}).done( function (data) {
+       if (data === '0') {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
+       } else {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
+       }
+       div.append(iframe);
+   });
    
    this.content.empty();
    this.content.append(div);
@@ -196,6 +359,11 @@ Display.Listeners = {}
 Display.Listeners.editTitle = function () {
    
    var div, oldTitle, editTitle, saveButton, cancelButton;
+   
+   if (Worksheet.editing === true) {
+      return;
+   }
+   Worksheet.editing = true;
     
    div = $(this);
    oldTitle = div.children().html();
@@ -220,13 +388,138 @@ Display.Listeners.editTitle = function () {
    div.append(cancelButton);
 }
 
+Display.Listeners.editProblem = function () {
+
+   var div, index, editDirections, editProblem, editSolution, saveButton, cancelButton, deleteButton, p;
+   
+   if (Worksheet.editing === true) {
+      return;
+   }
+   Worksheet.editing = true;
+   
+   div = $(this);
+   index = parseInt(div.attr('index'),10);
+   p = Worksheet.problems[index];
+   
+   div.empty();
+   div.unbind('click');
+   div.addClass('pure-form');
+    
+   editDirections = $('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'edit-directions','placeholder':'directions'})
+                    .val(p.directions);
+   editProblem = $('<textarea></textarea>')
+                 .addClass('margin padding')
+                 .attr({'id':'edit-problem','placeholder':'problem'})
+                 .val(p.problem);
+   editSolution = $('<textarea></textarea>')
+                  .addClass('margin padding')
+                  .attr({'id':'edit-solution','placeholder':'solution'})
+                  .val(p.solution);
+   saveButton = $('<button></button>')
+                .addClass('pure-button button-success margin')
+                .text('Save')
+                .on('click', Display.Listeners.saveProblem);
+   cancelButton = $('<button></button>')
+                  .addClass('pure-button button-warning margin')
+                  .text('Cancel')
+                  .on('click', Display.Listeners.cancel);
+   deleteButton = $('<button></button>')
+                  .addClass('pure-button button-error margin')
+                  .text('Delete')
+                  .on('click', Display.Listeners.deleteProblem);
+   upButton = $('<button></button>')
+              .addClass('pure-button pure-button-primary margin')
+              .html('Move Up')
+              .on('click', Display.Listeners.moveUp);
+   downButton = $('<button></button>')
+                .addClass('pure-button pure-button-primary margin')
+                .html('Move Down')
+                .on('click', Display.Listeners.moveDown);
+   
+   div.append(editDirections);
+   div.append(editProblem);
+   div.append(editSolution);
+   div.append(saveButton);
+   div.append(cancelButton);
+   div.append(deleteButton);
+   div.append(upButton);
+   div.append(downButton);
+}
+
 Display.Listeners.saveTitle = function () {
    
    Worksheet.title = $('#new-title').val();
    Display.render();
 }
 
+Display.Listeners.saveProblem = function () {
+
+   var div, directions, problem, solution, index;
+   
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   directions = $('#edit-directions').val();
+   problem = $('#edit-problem').val();
+   solution = $('#edit-solution').val();
+   
+   Worksheet.problems[index] = {'directions':directions,'problem':problem,'solution':solution};
+   
+   Display.render();
+
+}
+
 Display.Listeners.cancel = function () {
+   
+   Display.render();
+}
+
+Display.Listeners.deleteProblem = function () {
+
+   var div, directions, problem, solution, index;
+   
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+ 
+   Worksheet.problems.splice(index, 1);   
+   
+   Display.render();
+}
+
+Display.Listeners.moveUp = function () {
+
+   var div, index, tmp;
+
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   if (index === 0) {
+      return;
+   }
+
+   tmp = Worksheet.problems[index];
+   Worksheet.problems[index] = Worksheet.problems[index - 1];
+   Worksheet.problems[index - 1] = tmp;
+   
+   Display.render();
+}
+
+Display.Listeners.moveDown = function () {
+
+   var div, index, tmp;
+
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   if (index === Worksheet.problems.length - 1) {
+      return;
+   }
+
+   tmp = Worksheet.problems[index];
+   Worksheet.problems[index] = Worksheet.problems[index + 1];
+   Worksheet.problems[index + 1] = tmp;
    
    Display.render();
 }
@@ -243,7 +536,6 @@ Tools.init = function () {
    content.addClass('pure-u-1-4');
    
    this.content = content;
-   this.changed = true;
 }
 
 Tools.render = function () {
@@ -254,10 +546,30 @@ Tools.render = function () {
    div.addClass('padding text-center pure-form pure-form-stacked');
    
    div.append($('<h2></h2>').text('Tools'));
-   div.append($('<hr>'));
+   div.append('<hr>');
+
+   div.append($('<button></button>')
+              .addClass('pure-button pure-button-primary')
+              .text((UI.state === 'build') ? 'View PDF' : 'Build Worksheet')
+              .on('click',Tools.Listeners.toggleState)
+   );
    
    this.content.empty();
    this.content.append(div);   
+}
+
+Tools.Listeners = {}
+
+Tools.Listeners.toggleState = function () {
+   
+   if (UI.state === 'view') {
+      UI.state = 'build';
+   }
+   else if (UI.state === 'build') {
+      UI.state = 'view';
+   }
+   
+   UI.render();
 }
 
 /* Edit Object */
@@ -272,7 +584,6 @@ Edit.init = function () {
    content.addClass('pure-u-1-2');
    
    this.content = content;
-   this.changed = true;
 }
 
 Edit.render = function () {
@@ -293,25 +604,12 @@ Worksheet = {}
 
 Worksheet.init = function () {
    
-   this.title = 'Worksheet'
-   this.problems = []
-}
-
-/* MathDisplay Object */
-
-MathDisplay = {}
-
-MathDisplay.init = function () {
-   // Config MathJax
-   MathJax.Hub.Config({
-      showProcessingMessages: true,
-      showMathMenu: false,
-      tex2jax: { inlineMath: [['$','$']] }
-   });
-}
-
-MathDisplay.parseLatex = function () {
-   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+   this.title = 'Worksheet';
+   this.problems = [];
+   
+   this.solutions = true;
+   this.editing = false;
+   this.verticalSpace = 1;
 }
 
 /* MAIN */

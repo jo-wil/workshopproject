@@ -4,7 +4,7 @@ header {
 }
 #title {
    font-size: 2.5em;
-   text-shadow: 2px 2px black;
+   text-shadow: 3px 3px black;
 }
 .text-center {
    text-align: center;
@@ -16,7 +16,7 @@ header {
    width: 100%;
 }
 .margin {
-   margin: .5%;
+   margin: 1%;
 }
 .padding {
    padding: .5%;
@@ -31,7 +31,6 @@ header {
    border-radius: 4px;
    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
-
 .button-success {
    background: rgb(28, 184, 65); /* this is a green */
 }
