@@ -174,7 +174,7 @@ Search.Listeners.classSelect = function () {
 }
 
 Search.Listeners.searchButton = function () {
-   
+  
    var classSelect, topicSelect, classVal, topicVal, classText, topicText, resultMessage, results, r, container, i, len;
    
    classSelect = $('#class-select');
@@ -234,6 +234,9 @@ Display.init = function () {
 
    var content;
 
+   this.latex = false;
+   this.editing = false;
+
    content = $('<div></div>');
    content.addClass('pure-u-1-2');
    
@@ -258,7 +261,7 @@ Display.renderBuild = function () {
 
    var div, header, i, len, p, container, directions, problem, solution;
 
-   Worksheet.editing = false;
+   this.editing = false;
    
    div = $('<div></div>')
          .addClass('margin border padding max-height');
@@ -322,9 +325,9 @@ Display.renderEdit = function () {
    
    content = $('#latex-edit').val();
    
-   if (Worksheet.latex === false) {
+   if (this.latex === false) {
       content = Worksheet.createLatex();
-      Worksheet.latex = true;
+      this.latex = true;
    } 
    
    $.post("/worksheet", {worksheet: content}).done( function (data) {
@@ -334,7 +337,9 @@ Display.renderEdit = function () {
           iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
        }
        div.append(iframe);
+       
    });
+   
    
    this.content.empty();
    this.content.append(div);
@@ -347,10 +352,10 @@ Display.Listeners.editTitle = function () {
    
    var div, oldTitle, editTitle, saveButton, cancelButton;
    
-   if (Worksheet.editing === true) {
+   if (this.editing === true) {
       return;
    }
-   Worksheet.editing = true;
+   this.editing = true;
     
    div = $(this);
    oldTitle = div.children().html();
@@ -379,10 +384,10 @@ Display.Listeners.editProblem = function () {
 
    var div, index, editDirections, editProblem, editSolution, saveButton, cancelButton, deleteButton, p;
    
-   if (Worksheet.editing === true) {
+   if (this.editing === true) {
       return;
    }
-   Worksheet.editing = true;
+   this.editing = true;
    
    div = $(this);
    index = parseInt(div.attr('index'),10);
@@ -636,8 +641,6 @@ Worksheet.init = function () {
    this.problems = [];
    
    this.solutions = true;
-   this.editing = false;
-   this.latex = false;
    this.verticalSpace = 1;
 }
 
