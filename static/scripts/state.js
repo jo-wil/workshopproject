@@ -99,35 +99,8 @@ Search.render = function () {
    
    var div, classSelect, topicSelect, classSelect, topicSelect, options, o, i, len;
    
-   
-   var i, len, o, option, options, topicSelect, classSelect;
-   
-   classSelect = $('#class-select');
-   classSelect.empty();
-   
-   options = Config.classes;
-   len = options.length;
-   for (i = 0; i < len; i++) {
-      o = options[i];
-      option = $('<option></option>').attr('value',o.value).html(o.text);
-      classSelect.append(option);
-   }
-   
-   topicSelect = $('#topic-select');
-   topicSelect.empty();
-   
-   options = Config.topics141;
-   len = options.length;
-   for (i = 0; i < len; i++) {
-      o = options[i];
-      option = $('<option></option>').attr('value',o.value).html(o.text);
-      topicSelect.append(option);
-   }
-   
-   
-   
-   div = $('<div></div>');
-   div.addClass('padding text-center pure-form pure-form-stacked');
+   div = $('<div></div>')
+         .addClass('padding text-center pure-form pure-form-stacked');
    
    div.append($('<h2></h2>').text('Search'));
    div.append('<hr>');
@@ -276,6 +249,9 @@ Display.render = function () {
    if (UI.state === 'view') {
       Display.renderView();
    }
+   if (UI.state === 'edit') {
+      Display.renderEdit();
+   }
 }
 
 Display.renderBuild = function () {
@@ -284,8 +260,8 @@ Display.renderBuild = function () {
 
    Worksheet.editing = false;
    
-   div = $('<div></div>');
-   div.addClass('margin border padding max-height');
+   div = $('<div></div>')
+         .addClass('margin border padding max-height');
          
    header = $('<div></div>');
    header.addClass('text-center click-me');
@@ -317,29 +293,12 @@ Display.renderBuild = function () {
 
 Display.renderView = function () {
 
-   var div, content, i , len, p;
+   var div, content;
 
-   div = $('<div></div>');
-   div.addClass('margin border padding max-height');
+   div = $('<div></div>')
+         .addClass('margin max-height');
 
-   content = '\\documentclass[12pt]{article}\n' +
-             '\\title{' + Worksheet.title + '}\n' +
-             '\\author{SWM}\n' +
-             '\\begin{document}\n' +
-             '\\maketitle\n';
-             
-   len = Worksheet.problems.length;          
-   for (i = 0; i < len; i++) {
-      p = Worksheet.problems[i];
-      content += p.directions + '\n\\vspace{1cm}\n\n';
-      if (Worksheet.solutions) {
-         content += p.problem + '\n\\vspace{1cm}\n\n';
-         content += p.solution + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
-      } else {
-         content += p.problem + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
-      }
-   }
-   content += '\\end{document}';
+   content = Worksheet.createLatex();
       
    $.post("/worksheet", {worksheet: content}).done( function (data) {
        if (data === '0') {
@@ -352,6 +311,34 @@ Display.renderView = function () {
    
    this.content.empty();
    this.content.append(div);
+}
+
+Display.renderEdit = function () {
+   
+   var div, content;
+
+   div = $('<div></div>')
+         .addClass('margin max-height');
+   
+   content = $('#latex-edit').val();
+   
+   if (Worksheet.latex === false) {
+      content = Worksheet.createLatex();
+      Worksheet.latex = true;
+   } 
+   
+   $.post("/worksheet", {worksheet: content}).done( function (data) {
+       if (data === '0') {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
+       } else {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
+       }
+       div.append(iframe);
+   });
+   
+   this.content.empty();
+   this.content.append(div);
+   
 }
 
 Display.Listeners = {}
@@ -548,11 +535,25 @@ Tools.render = function () {
    div.append($('<h2></h2>').text('Tools'));
    div.append('<hr>');
 
-   div.append($('<button></button>')
+   if (UI.state === 'build') {
+      div.append($('<button></button>')
               .addClass('pure-button pure-button-primary')
-              .text((UI.state === 'build') ? 'View PDF' : 'Build Worksheet')
-              .on('click',Tools.Listeners.toggleState)
-   );
+              .text('View PDF')
+              .on('click',Tools.Listeners.viewState)
+      );
+   }
+   if (UI.state === 'view') {
+      div.append($('<button></button>')
+              .addClass('pure-button pure-button-primary margin')
+              .text('Build Worksheet')
+              .on('click',Tools.Listeners.buildState)
+      );
+      div.append($('<button></button>')
+              .addClass('pure-button button-error margin')
+              .text('Edit Latex')
+              .on('click',Tools.Listeners.editState)
+      );
+   }
    
    this.content.empty();
    this.content.append(div);   
@@ -560,15 +561,21 @@ Tools.render = function () {
 
 Tools.Listeners = {}
 
-Tools.Listeners.toggleState = function () {
+Tools.Listeners.buildState = function () {
    
-   if (UI.state === 'view') {
-      UI.state = 'build';
-   }
-   else if (UI.state === 'build') {
-      UI.state = 'view';
-   }
+   UI.state = 'build'
+   UI.render();
+}
+
+Tools.Listeners.viewState = function () {
    
+   UI.state = 'view'
+   UI.render();
+}
+
+Tools.Listeners.editState = function () {
+   
+   UI.state = 'edit'
    UI.render();
 }
 
@@ -588,14 +595,35 @@ Edit.init = function () {
 
 Edit.render = function () {
    
-   var div;
+   var div, textarea, content;
    
    div = $('<div></div>');
+   div.addClass('margin max-height');
    
-   div.html('Edit');
+   div.append($('<button></button>')
+               .addClass('pure-button pure-button-primary max-width margin')
+               .text('Refresh')
+               .on('click',Edit.Listeners.refresh)
+   );
+   
+   content = Worksheet.createLatex();
+   
+   textarea = $('<textarea></textarea>')
+              .addClass('max-height max-width padding')
+              .attr({'id':'latex-edit','spellcheck':'false'})
+              .val(content);
+   
+   div.append(textarea);
    
    this.content.empty();
    this.content.append(div);  
+}
+
+Edit.Listeners = {}
+
+Edit.Listeners.refresh = function () {
+
+   Display.render();
 }
 
 /* Worksheet Object */
@@ -609,7 +637,35 @@ Worksheet.init = function () {
    
    this.solutions = true;
    this.editing = false;
+   this.latex = false;
    this.verticalSpace = 1;
+}
+
+Worksheet.createLatex = function () {
+
+   var content, i , len, p;
+
+   content = '\\documentclass[12pt]{article}\n' +
+             '\\title{' + Worksheet.title + '}\n' +
+             '\\author{SWM}\n' +
+             '\\begin{document}\n' +
+             '\\maketitle\n';
+             
+   len = Worksheet.problems.length;          
+   for (i = 0; i < len; i++) {
+      p = Worksheet.problems[i];
+      content += p.directions + '\n\\vspace{1cm}\n\n';
+      if (Worksheet.solutions) {
+         content += p.problem + '\n\\vspace{1cm}\n\n';
+         content += p.solution + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      } else {
+         content += p.problem + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      }
+   }
+   
+   content += '\\end{document}';
+
+   return content;
 }
 
 /* MAIN */
