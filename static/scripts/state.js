@@ -259,7 +259,7 @@ Display.render = function () {
 
 Display.renderBuild = function () {
 
-   var div, header, i, len, p, container, directions, problem, solution;
+   var div, header, i, len, p, container, newDirections, newProblem, newSolution, addButton;
 
    this.editing = false;
    
@@ -287,7 +287,22 @@ Display.renderBuild = function () {
    }
    
    container = $('<div></div>');
-   container.addClass('padding').attr('id','worksheet-problems');
+   container.addClass('padding pure-form');
+   
+   container.append($('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'add-directions','placeholder':'directions'}));
+   container.append($('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'add-problem','placeholder':'problem'}));
+   container.append($('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'add-solution','placeholder':'solution'}));
+   container.append($('<button></button>')
+                    .addClass('pure-button button-success margin')
+                    .text('Add')
+                    .on('click', Display.Listeners.addProblem));
+   
    div.append(container);
    
    this.content.empty();
@@ -332,14 +347,11 @@ Display.renderEdit = function () {
    
    $.post("/worksheet", {worksheet: content}).done( function (data) {
        if (data === '0') {
-          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
+          div.append($('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf'));
        } else {
-          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
-       }
-       div.append(iframe);
-       
+          div.append($('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt'));
+       }       
    });
-   
    
    this.content.empty();
    this.content.append(div);
@@ -364,25 +376,35 @@ Display.Listeners.editTitle = function () {
    div.unbind('click');
    div.addClass('pure-form');
    
-   editTitle = $('<input></input>').addClass('padding margin').attr('id','new-title').val(oldTitle);
-   saveButton = $('<button></button>')
-                .addClass('pure-button button-success margin')
-                .text('Save')
-                .on('click', Display.Listeners.saveTitle);
-   cancelButton = $('<button></button>')
-                  .addClass('pure-button button-warning margin')
-                  .text('Cancel')
-                  .on('click', Display.Listeners.cancel);
-   
-   div.append(editTitle);
+   div.append($('<input></input>').addClass('padding margin').attr('id','new-title').val(oldTitle));
    div.append('<br>');
-   div.append(saveButton);
-   div.append(cancelButton);
+   div.append($('<button></button>')
+              .addClass('pure-button button-success margin')
+              .text('Save')
+              .on('click', Display.Listeners.saveTitle));
+   div.append($('<button></button>')
+              .addClass('pure-button button-warning margin')
+              .text('Cancel')
+              .on('click', Display.Listeners.cancel));
+}
+
+Display.Listeners.addProblem = function () {
+
+   var directions, problem, solution;
+   
+   directions = $('#add-directions').val();
+   problem = $('#add-problem').val();
+   solution = $('#add-solution').val();
+   
+   Worksheet.problems.push({'directions':directions,'problem':problem,'solution':solution});
+   
+   Display.render();
+
 }
 
 Display.Listeners.editProblem = function () {
 
-   var div, index, editDirections, editProblem, editSolution, saveButton, cancelButton, deleteButton, p;
+   var div, index, p;
    
    if (this.editing === true) {
       return;
@@ -397,47 +419,38 @@ Display.Listeners.editProblem = function () {
    div.unbind('click');
    div.addClass('pure-form');
     
-   editDirections = $('<textarea></textarea>')
-                    .addClass('margin padding')
-                    .attr({'id':'edit-directions','placeholder':'directions'})
-                    .val(p.directions);
-   editProblem = $('<textarea></textarea>')
-                 .addClass('margin padding')
-                 .attr({'id':'edit-problem','placeholder':'problem'})
-                 .val(p.problem);
-   editSolution = $('<textarea></textarea>')
-                  .addClass('margin padding')
-                  .attr({'id':'edit-solution','placeholder':'solution'})
-                  .val(p.solution);
-   saveButton = $('<button></button>')
-                .addClass('pure-button button-success margin')
-                .text('Save')
-                .on('click', Display.Listeners.saveProblem);
-   cancelButton = $('<button></button>')
-                  .addClass('pure-button button-warning margin')
-                  .text('Cancel')
-                  .on('click', Display.Listeners.cancel);
-   deleteButton = $('<button></button>')
-                  .addClass('pure-button button-error margin')
-                  .text('Delete')
-                  .on('click', Display.Listeners.deleteProblem);
-   upButton = $('<button></button>')
+   div.append($('<textarea></textarea>')
+              .addClass('margin padding')
+              .attr({'id':'edit-directions','placeholder':'directions'})
+              .val(p.directions));
+   div.append($('<textarea></textarea>')
+              .addClass('margin padding')
+              .attr({'id':'edit-problem','placeholder':'problem'})
+              .val(p.problem));
+   div.append($('<textarea></textarea>')
+              .addClass('margin padding')
+              .attr({'id':'edit-solution','placeholder':'solution'})
+              .val(p.solution));
+   div.append($('<button></button>')
+              .addClass('pure-button button-success margin')
+              .text('Save')
+              .on('click', Display.Listeners.saveProblem));
+   div.append($('<button></button>')
+              .addClass('pure-button button-warning margin')
+              .text('Cancel')
+              .on('click', Display.Listeners.cancel));
+   div.append($('<button></button>')
+              .addClass('pure-button button-error margin')
+              .text('Delete')
+              .on('click', Display.Listeners.deleteProblem));
+   div.append($('<button></button>')
               .addClass('pure-button pure-button-primary margin')
               .html('Move Up')
-              .on('click', Display.Listeners.moveUp);
-   downButton = $('<button></button>')
-                .addClass('pure-button pure-button-primary margin')
-                .html('Move Down')
-                .on('click', Display.Listeners.moveDown);
-   
-   div.append(editDirections);
-   div.append(editProblem);
-   div.append(editSolution);
-   div.append(saveButton);
-   div.append(cancelButton);
-   div.append(deleteButton);
-   div.append(upButton);
-   div.append(downButton);
+              .on('click', Display.Listeners.moveUp));
+   div.append($('<button></button>')
+              .addClass('pure-button pure-button-primary margin')
+              .html('Move Down')
+              .on('click', Display.Listeners.moveDown));
 }
 
 Display.Listeners.saveTitle = function () {
@@ -549,15 +562,13 @@ Tools.render = function () {
    }
    if (UI.state === 'view') {
       div.append($('<button></button>')
-              .addClass('pure-button pure-button-primary margin')
-              .text('Build Worksheet')
-              .on('click',Tools.Listeners.buildState)
-      );
+                 .addClass('pure-button pure-button-primary margin')
+                 .text('Build Worksheet')
+                 .on('click',Tools.Listeners.buildState));
       div.append($('<button></button>')
-              .addClass('pure-button button-error margin')
-              .text('Edit Latex')
-              .on('click',Tools.Listeners.editState)
-      );
+                 .addClass('pure-button button-error margin')
+                 .text('Edit Latex')
+                 .on('click',Tools.Listeners.editState));
    }
    
    this.content.empty();
