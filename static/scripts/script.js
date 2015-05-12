@@ -1,4 +1,4 @@
-var Config, UI, Worksheet, Listeners, MathDisplay; 
+var Config, UI, Search, Display, Tools, Edit, Worksheet, MathDisplay;
 
 /* Config Object */
 Config = {
@@ -15,69 +15,6 @@ Config = {
   
   topics143: [{'text': 'gfsd', 'value': 'erwt'},
               {'text': 'wert', 'value': 'ewrt'}]  
-}
-
-/* UI Object */
-UI = {}
-
-UI.init = function () {
-
-   UI.initSelect();
-   UI.initListeners();
-   UI.initTools();
-   MathDisplay.init();
-   Worksheet.render();
-}
-
-UI.initListeners = function () {
-   $('#class-select').on('change',Listeners.classSelect);
-   $('#search-button').on('click',Listeners.searchButton);
-   $('#add-button').on('click',Listeners.addNewButton);
-   $('#save-button').on('click',Listeners.saveButton);
-   $('#load-button').on('click',Listeners.loadButton);
-   $('#toggle-button').on('click',Listeners.toggleButton);
-   $('#solutions-checkbox').on('change',Listeners.solutionsCheckbox);
-   $('#vertical-select').on('change',Listeners.verticalSelect);
-   $('#latex-help-label').on('click',Listeners.displayTool);
-   $('#add-problem-label').on('click',Listeners.displayTool);
-   $('#manage-worksheet-label').on('click',Listeners.displayTool);
-   $('#options-label').on('click',Listeners.displayTool);
-   $('#latex-edit-button').on('click',Listeners.editButton);
-   $('#refresh-button').on('click',Listeners.refreshButton);
-}
-
-UI.initTools = function () {
-   
-   $('#solutions-checkbox').attr('checked', false);
-   $('#vertical-select').val('1');
-   Worksheet.verticalSpace = '1';
-}
-
-UI.initSelect = function () {
-
-   var i, len, o, option, options, topicSelect, classSelect;
-   
-   classSelect = $('#class-select');
-   classSelect.empty();
-   
-   options = Config.classes;
-   len = options.length;
-   for (i = 0; i < len; i++) {
-      o = options[i];
-      option = $('<option></option>').attr('value',o.value).html(o.text);
-      classSelect.append(option);
-   }
-   
-   topicSelect = $('#topic-select');
-   topicSelect.empty();
-   
-   options = Config.topics141;
-   len = options.length;
-   for (i = 0; i < len; i++) {
-      o = options[i];
-      option = $('<option></option>').attr('value',o.value).html(o.text);
-      topicSelect.append(option);
-   }
 }
 
 /* MathDisplay Object */
@@ -97,87 +34,715 @@ MathDisplay.parseLatex = function () {
    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
 
-/* Worksheet Object */
-Worksheet = {}
+/* Main UI Object */
 
-Worksheet.title = 'Worksheet';
-Worksheet.problems = [];
-Worksheet.state = 'HTML'; // other option is Latex
-Worksheet.solutions = false; // denotes whether the solutions should be displayed in the worksheet 
-Worksheet.verticalSpace = '1';
-Worksheet.editing = false; // mutex so only one element is edited at a time
+UI = {}
 
-Worksheet.renderHTMLHeader = function (worksheet) {
+UI.init = function () {
 
-   var worksheetHeader, titleDiv, title;
-
-   worksheetHeader = $('<div></div>').attr('id','worksheet-header');
+   this.content = $('#content');
+   this.content.addClass('pure-g');
    
-   titleDiv = $('<div></div>').on('click',Listeners.editTitle);
-   title = $('<h1></h1>').addClass('text-center click-me').html(Worksheet.title);
-   titleDiv.append(title);
+   this.state = 'build'; // other options are view and edit
+
+   MathDisplay.init();
+   Worksheet.init();
+   Search.init();
+   Display.init();
+   Tools.init();
+   Edit.init();
    
-   worksheetHeader.append(titleDiv);
+   UI.render();
    
-   worksheet.append(worksheetHeader);
 }
 
-Worksheet.renderHTMLProblem = function (index, worksheetDiv, p) {
-   var problemSpan, solutionSpan, problemDiv, directions;
-   
-   problemDiv = $('<div></div>').addClass('padding click-me').attr('index',index).on('click', Listeners.editProblem);
-   
-   directions = $('<p></p>').html('Directions: ' + p.directions);
-   problemDiv.append(directions);
-   
-   problemSpan = $('<p></p>').html('Problem: ' + p.problem);
-   problemDiv.append(problemSpan);
-   
-   solutionSpan = $('<p></p>').html('Solution: ' + p.solution);
-   problemDiv.append(solutionSpan);
-   
-   worksheetDiv.append(problemDiv);
+UI.render = function () {
+
+   UI.content.empty();
+
+   if (this.state === 'build' || this.state === 'view') {
+      
+      Search.render();
+      Display.render();
+      Tools.render();
+      
+      this.content.append(Search.content);
+      this.content.append(Display.content);
+      this.content.append(Tools.content);
+   }
+   else if (this.state === 'edit') {
+      
+      Edit.render();
+      Display.render();
+      
+      this.content.append(Edit.content);
+      this.content.append(Display.content);
+   }
+
 }
 
-Worksheet.renderHTMLContent = function (worksheet) {
+/* Search Object */
 
-   var i, len, problemSpan, worksheetDiv, problemDiv, p;
+Search = {}
 
-   worksheetDiv = $('<div></div>').attr('id','worksheet-content');
+Search.init = function () {
+
+   var content;
+
+   content = $('<div></div>');
+   content.addClass('pure-u-1-4');
+   
+   this.content = content;
+}
+
+Search.render = function () {
+   
+   var div, classSelect, topicSelect, classSelect, topicSelect, options, o, i, len;
+   
+   div = $('<div></div>')
+         .addClass('padding text-center pure-form pure-form-stacked');
+   
+   div.append($('<h2></h2>').html('Search'));
+   div.append('<hr>');
+   
+   if (UI.state === 'build') {
+   
+      div.append($('<label></label>').html('Class'));
+      classSelect = $('<select></select>');
+      classSelect.addClass('max-width')
+                 .attr('id', 'class-select')
+                 .on('change', Search.Listeners.classSelect);
+      
+      options = Config.classes;
+      len = options.length;
+      for (i = 0; i < len; i++) {
+         o = options[i];
+         classSelect.append($('<option></option>').attr('value',o.value).html(o.text));
+      }
+      
+      div.append(classSelect);
+      
+      div.append($('<label></label>').html('Topic'));
+      topicSelect = $('<select></select>').addClass('max-width').attr('id','topic-select');
+      
+      options = Config.topics141;
+      len = options.length;
+      for (i = 0; i < len; i++) {
+         o = options[i];
+         topicSelect.append($('<option></option>').attr('value',o.value).html(o.text));
+      }
+      
+      div.append(topicSelect);
+      
+      div.append('<br>');
+      div.append($('<button></button>')
+                 .addClass('pure-button button-success')
+                 .html('Search')
+                 .on('click', Search.Listeners.searchButton));
+  
+      div.append($('<div></div>').addClass('padding').attr('id','search-results'));
+   }
+   
+   this.content.empty();
+   this.content.append(div);   
+}
+
+Search.Listeners = {}
+
+Search.Listeners.classSelect = function () {
+  
+   var i, len, o, option, options, topicSelect;
+   topicSelect = $('#topic-select');
+   topicSelect.empty();
+   switch (this.value) {
+      case '141':
+         options = Config.topics141;
+         break;
+      case '142':
+         options = Config.topics142;
+         break;   
+      case '143':
+         options = Config.topics143;
+         break;
+   }
+   len = options.length
+   for (i = 0; i < len; i++) {
+      o = options[i];
+      option = $('<option></option>').attr('value',o.value).html(o.text);
+      topicSelect.append(option);
+   }
+}
+
+Search.Listeners.searchButton = function () {
+  
+   var classSelect, topicSelect, classVal, topicVal, classText, topicText, resultMessage, results, r, container, i, len;
+   
+   classSelect = $('#class-select');
+   topicSelect = $('#topic-select');
+   classVal = classSelect.val();
+   topicVal = topicSelect.val();
+   classText = classSelect.children("option:selected").html();
+   topicText = topicSelect.children("option:selected").html();
+   
+   container = $('#search-results');
+   container.empty();
+   container.append('<br>');
+   
+   $.get('/database', {'class_name': classVal, 'topic': topicVal}, function (data) {
+      
+      results = JSON.parse(data);
+      
+      len = results.length;
+      
+      resultMessage = $('<p></p>').html('Search for ' + classText + ' ' + topicText + ' returned ' + len + ' problems.');
+      container.append(resultMessage);
+      
+      for (i = 0; i < len; i++) {
+         r = results[i];
+         container.append($('<span></span>').addClass('margin').html(r.problem));
+         container.append($('<button></button>')
+                          .addClass('margin pure-button button-success')
+                          .attr({'problem':r.problem, 'solution':r.solution})
+                          .html('Add')
+                          .on('click', Search.Listeners.addButton));
+         container.append('<br>')
+      }
+      MathDisplay.parseLatex();
+   });
+}
+
+Search.Listeners.addButton = function () {
+
+   var problem, solution, button;
+   
+   button = $(this);
+   
+   problem = button.attr('problem');
+   solution = button.attr('solution');
+   
+   Worksheet.problems.push({'directions':'', 'problem':problem, 'solution':solution});
+   
+   Display.render();
+    
+}
+
+/* Display Object */
+
+Display = {}
+
+Display.init = function () {
+
+   var content;
+
+   this.latex = false;
+   this.editing = false;
+
+   content = $('<div></div>');
+   content.addClass('pure-u-1-2');
+   
+   this.content = content;
+}
+
+Display.render = function () {
+     
+   if (UI.state === 'build') {
+      Display.renderBuild();   
+      MathDisplay.parseLatex();
+   }
+   if (UI.state === 'view') {
+      Display.renderView();
+   }
+   if (UI.state === 'edit') {
+      Display.renderEdit();
+   }
+}
+
+Display.renderBuild = function () {
+
+   var div, header, i, len, p, container, newDirections, newProblem, newSolution, addButton;
+
+   this.editing = false;
+   
+   div = $('<div></div>')
+         .addClass('margin border padding max-height');
+         
+   header = $('<div></div>');
+   header.addClass('text-center click-me');
+   header.append($('<h1></h1>').html(Worksheet.title));
+   div.append(header);
+   header.on('click', Display.Listeners.editTitle);
+   
    len = Worksheet.problems.length;
    
    for (i = 0; i < len; i++) {
       p = Worksheet.problems[i];
-      Worksheet.renderHTMLProblem(i, worksheetDiv, p);
+      container = $('<div></div>')
+                  .addClass('padding click-me')
+                  .attr('index',i)
+                  .on('click', Display.Listeners.editProblem);
+      container.append($('<p></p>').html('Directions: ' + p.directions));
+      container.append($('<p></p>').html('Problem: ' + p.problem));
+      container.append($('<p></p>').html('Solution: ' + p.solution));
+      div.append(container);
    }
    
-   worksheet.append(worksheetDiv);
+   container = $('<div></div>');
+   container.addClass('padding pure-form');
+   
+   container.append($('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'add-directions','placeholder':'directions'}));
+   container.append($('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'add-problem','placeholder':'problem'}));
+   container.append($('<textarea></textarea>')
+                    .addClass('margin padding')
+                    .attr({'id':'add-solution','placeholder':'solution'}));
+   container.append($('<button></button>')
+                    .addClass('pure-button button-success margin')
+                    .html('Add')
+                    .on('click', Display.Listeners.addProblem));
+   
+   div.append(container);
+   
+   this.content.empty();
+   this.content.append(div);
 }
 
-Worksheet.render = function () {
+Display.renderView = function () {
 
-   Worksheet.editing = false;
+   var div, content;
+
+   div = $('<div></div>')
+         .addClass('margin max-height');
+
+   content = Worksheet.createLatex();
+      
+   $.post("/worksheet", {worksheet: content}).done( function (data) {
+       if (data === '0') {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
+       } else {
+          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
+       }
+       div.append(iframe);
+   });
    
-   if (Worksheet.state === 'HTML') {
-      Worksheet.renderHTML();
-   } else if (Worksheet.state === 'Latex') {
-      Worksheet.renderLatex('worksheet', Worksheet.createLatex());
+   this.content.empty();
+   this.content.append(div);
+}
+
+Display.renderEdit = function () {
+   
+   var div, content;
+
+   div = $('<div></div>')
+         .addClass('margin max-height');
+   
+   content = $('#latex-edit').val();
+   
+   if (this.latex === false) {
+      content = Worksheet.createLatex();
+      this.latex = true;
+   } 
+   
+   $.post("/worksheet", {worksheet: content}).done( function (data) {
+       if (data === '0') {
+          div.append($('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf'));
+       } else {
+          div.append($('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt'));
+       }       
+   });
+   
+   this.content.empty();
+   this.content.append(div);
+   
+}
+
+Display.Listeners = {}
+
+Display.Listeners.editTitle = function () {
+   
+   var div, oldTitle, editTitle, saveButton, cancelButton;
+   
+   if (this.editing === true) {
+      return;
+   }
+   this.editing = true;
+    
+   div = $(this);
+   oldTitle = div.children().html();
+   
+   div.empty();
+   div.unbind('click');
+   div.addClass('pure-form');
+   
+   div.append($('<input></input>').addClass('padding margin').attr('id','new-title').val(oldTitle));
+   div.append('<br>');
+   div.append($('<button></button>')
+              .addClass('pure-button button-success margin')
+              .html('Save')
+              .on('click', Display.Listeners.saveTitle));
+   div.append($('<button></button>')
+              .addClass('pure-button button-warning margin')
+              .html('Cancel')
+              .on('click', Display.Listeners.cancel));
+}
+
+Display.Listeners.addProblem = function () {
+
+   var directions, problem, solution;
+   
+   directions = $('#add-directions').val();
+   problem = $('#add-problem').val();
+   solution = $('#add-solution').val();
+   
+   Worksheet.problems.push({'directions':directions,'problem':problem,'solution':solution});
+   
+   Display.render();
+
+}
+
+Display.Listeners.editProblem = function () {
+
+   var div, index, p;
+   
+   if (this.editing === true) {
+      return;
+   }
+   this.editing = true;
+   
+   div = $(this);
+   index = parseInt(div.attr('index'),10);
+   p = Worksheet.problems[index];
+   
+   div.empty();
+   div.unbind('click');
+   div.addClass('pure-form');
+    
+   div.append($('<textarea></textarea>')
+              .addClass('margin padding')
+              .attr({'id':'edit-directions','placeholder':'directions'})
+              .val(p.directions));
+   div.append($('<textarea></textarea>')
+              .addClass('margin padding')
+              .attr({'id':'edit-problem','placeholder':'problem'})
+              .val(p.problem));
+   div.append($('<textarea></textarea>')
+              .addClass('margin padding')
+              .attr({'id':'edit-solution','placeholder':'solution'})
+              .val(p.solution));
+   div.append($('<button></button>')
+              .addClass('pure-button button-success margin')
+              .html('Save')
+              .on('click', Display.Listeners.saveProblem));
+   div.append($('<button></button>')
+              .addClass('pure-button button-warning margin')
+              .html('Cancel')
+              .on('click', Display.Listeners.cancel));
+   div.append($('<button></button>')
+              .addClass('pure-button button-error margin')
+              .html('Delete')
+              .on('click', Display.Listeners.deleteProblem));
+   div.append($('<button></button>')
+              .addClass('pure-button pure-button-primary margin')
+              .html('Move Up')
+              .on('click', Display.Listeners.moveUp));
+   div.append($('<button></button>')
+              .addClass('pure-button pure-button-primary margin')
+              .html('Move Down')
+              .on('click', Display.Listeners.moveDown));
+}
+
+Display.Listeners.saveTitle = function () {
+   
+   Worksheet.title = $('#new-title').val();
+   Display.render();
+}
+
+Display.Listeners.saveProblem = function () {
+
+   var div, directions, problem, solution, index;
+   
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   directions = $('#edit-directions').val();
+   problem = $('#edit-problem').val();
+   solution = $('#edit-solution').val();
+   
+   Worksheet.problems[index] = {'directions':directions,'problem':problem,'solution':solution};
+   
+   Display.render();
+
+}
+
+Display.Listeners.cancel = function () {
+   
+   Display.render();
+}
+
+Display.Listeners.deleteProblem = function () {
+
+   var div, directions, problem, solution, index;
+   
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+ 
+   Worksheet.problems.splice(index, 1);   
+   
+   Display.render();
+}
+
+Display.Listeners.moveUp = function () {
+
+   var div, index, tmp;
+
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   if (index === 0) {
+      return;
+   }
+
+   tmp = Worksheet.problems[index];
+   Worksheet.problems[index] = Worksheet.problems[index - 1];
+   Worksheet.problems[index - 1] = tmp;
+   
+   Display.render();
+}
+
+Display.Listeners.moveDown = function () {
+
+   var div, index, tmp;
+
+   div = $(this).parent();
+   index = parseInt(div.attr('index'),10);
+   
+   if (index === Worksheet.problems.length - 1) {
+      return;
+   }
+
+   tmp = Worksheet.problems[index];
+   Worksheet.problems[index] = Worksheet.problems[index + 1];
+   Worksheet.problems[index + 1] = tmp;
+   
+   Display.render();
+}
+
+/* Tools Object */
+
+Tools = {}
+
+Tools.init = function () {
+
+   var content;
+
+   content = $('<div></div>');
+   content.addClass('pure-u-1-4');
+   
+   this.content = content;
+}
+
+Tools.render = function () {
+   
+   var div;
+   
+   div = $('<div></div>');
+   div.addClass('padding text-center pure-form pure-form-stacked');
+   
+   div.append($('<h2></h2>').html('Tools'));
+   div.append('<hr>');
+
+   if (UI.state === 'build') {
+      div.append($('<button></button>')
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('View PDF')
+                 .on('click',Tools.Listeners.viewState));
+      div.append($('<h3></h3>').html('Manage Worksheets'));
+      div.append($('<button></button>')
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('Save')
+                 .on('click',Tools.Listeners.saveButton));
+      div.append($('<button></button>')
+                 .addClass('pure-button button-warning margin')
+                 .html('Load')
+                 .on('click',Tools.Listeners.loadButton));
+      div.append($('<div></div>').attr('id','saved-worksheets'));
+     
+   }
+   if (UI.state === 'view') {
+      div.append($('<button></button>')
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('Build Worksheet')
+                 .on('click',Tools.Listeners.buildState));
+      div.append($('<button></button>')
+                 .addClass('pure-button button-error margin')
+                 .html('Edit Latex')
+                 .on('click',Tools.Listeners.editState));
+      div.append('<br><br><br>');   
+      div.append($('<input></input>')
+                 .addClass('margin')
+                 .attr('type','checkbox')
+                 .on('change',Tools.Listeners.solutionsCheckbox));
+      div.append('Show Solutions');
+      div.append($('<h3></h3>').html('Manage Worksheets'));
+      div.append($('<button></button>')
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('Save')
+                 .on('click',Tools.Listeners.saveButton));
+      div.append($('<div></div>').attr('id','saved-worksheets'));
+   }
+   
+   this.content.empty();
+   this.content.append(div);   
+}
+
+Tools.Listeners = {}
+
+Tools.Listeners.buildState = function () {
+   
+   UI.state = 'build'
+   UI.render();
+}
+
+Tools.Listeners.viewState = function () {
+   
+   UI.state = 'view'
+   UI.render();
+}
+
+Tools.Listeners.editState = function () {
+   
+   UI.state = 'edit'
+   UI.render();
+}
+
+Tools.Listeners.solutionsCheckbox = function () {
+
+   if (this.checked === true) {
+      Worksheet.solutions = true;
    } else {
-      console.log('Rendering Error!');
+      Worksheet.solutions = false;  
+   }
+   Display.render();
+}
+
+Tools.Listeners.saveButton = function () {
+   localStorage.setItem(Worksheet.title, JSON.stringify(Worksheet.problems));
+   $('#saved-worksheets').html($('<p></p>').html('Worksheet Saved!'));
+}
+
+Tools.Listeners.loadButton = function () {
+   
+   var i, len, container, div;
+   
+   div = $('#saved-worksheets');
+   div.empty(); 
+   
+   len = localStorage.length;
+   
+   if (len === 0) {
+      div.append($('<p></p>').html('There are no saved worksheets.'));
+      return;
+   }
+   
+   div.append($('<p></p>').html('Saved Worksheets:'));
+   for (i = 0; i < len; i++){
+      container = $('<div></div>').addClass('padding');
+      container.append($('<span></span>').addClass('padding').html(localStorage.key(i)));
+      container.append($('<button></button>')
+                       .addClass('pure-button button-success margin')
+                       .html('Reload')
+                       .on('click',Tools.Listeners.reloadButton));
+      container.append($('<button></button>')
+                       .addClass('pure-button button-error margin')
+                       .html('Delete')
+                       .on('click',Tools.Listeners.deleteButton));
+      div.append(container);
    }
 }
 
-Worksheet.renderHTML = function () {
+Tools.Listeners.reloadButton = function () {
 
-   var worksheet;
+   var key;
+
+   key = $(this).parent().find('span').html();
+
+   Worksheet.title = key;
+   Worksheet.problems = JSON.parse(localStorage.getItem(key));
+
+   Display.render();
+}
+
+Tools.Listeners.deleteButton = function () {
+
+   var key;
+
+   key = $(this).parent().find('span').html();
    
-   worksheet = $('#worksheet');
-   worksheet.empty();
+   localStorage.removeItem(key);
    
-   Worksheet.renderHTMLHeader(worksheet);
-   Worksheet.renderHTMLContent(worksheet);
+   Tools.Listeners.loadButton();
+}
+
+/* Edit Object */
+
+Edit = {}
+
+Edit.init = function () {
+
+   var content;
+
+   content = $('<div></div>');
+   content.addClass('pure-u-1-2');
    
-   MathDisplay.parseLatex();
+   this.content = content;
+}
+
+Edit.render = function () {
+   
+   var div, textarea, content;
+   
+   div = $('<div></div>');
+   div.addClass('margin max-height');
+   
+   div.append($('<button></button>')
+               .addClass('pure-button pure-button-primary max-width margin')
+               .html('Refresh')
+               .on('click',Edit.Listeners.refresh)
+   );
+   
+   content = Worksheet.createLatex();
+   
+   textarea = $('<textarea></textarea>')
+              .addClass('max-height max-width padding')
+              .attr({'id':'latex-edit','spellcheck':'false'})
+              .val(content);
+   
+   div.append(textarea);
+   
+   this.content.empty();
+   this.content.append(div);  
+}
+
+Edit.Listeners = {}
+
+Edit.Listeners.refresh = function () {
+
+   Display.render();
+}
+
+/* Worksheet Object */
+
+Worksheet = {}
+
+Worksheet.init = function () {
+   
+   this.title = 'Worksheet';
+   this.problems = [];
+   
+   this.solutions = false;
+   this.verticalSpace = 1;
 }
 
 Worksheet.createLatex = function () {
@@ -205,407 +770,6 @@ Worksheet.createLatex = function () {
    content += '\\end{document}';
 
    return content;
-}
-
-Worksheet.renderLatex = function (id, content) {
-
-   var worksheet, iframe;
-   
-   worksheet = $('#'+id);
-   worksheet.empty();
-      
-   $.post("/worksheet", {worksheet: content}).done( function (data) {
-       if (data === '0') {
-          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/worksheet.pdf');
-       } else {
-          iframe = $('<iframe></iframe>').addClass('max-height max-width').attr('src','/static/worksheets/error.txt');
-       }
-       worksheet.append(iframe);
-   });
-   
-}
-
-/* Listeners Object */
-Listeners = {}
-
-Listeners.classSelect = function () {
-  
-   var i, len, o, option, options, topicSelect;
-   topicSelect = $('#topic-select');
-   topicSelect.empty();
-   switch (this.value) {
-      case '141':
-         options = Config.topics141;
-         break;
-      case '142':
-         options = Config.topics142;
-         break;   
-      case '143':
-         options = Config.topics143;
-         break;
-   }
-   len = options.length
-   for (i = 0; i < len; i++) {
-      o = options[i];
-      option = $('<option></option>').attr('value',o.value).html(o.text);
-      topicSelect.append(option);
-   }
-}
-
-Listeners.toggleButton = function () {
-
-   var button;
-   
-   button = $('#toggle-button');
-   if (Worksheet.state === 'HTML') {
-      Worksheet.state = 'Latex';
-      button.html('Edit Worksheet');
-      $('#format-div').toggleClass('hidden');
-      $('#edit-div').toggleClass('hidden');
-      $('#search-button').toggleClass('hidden');
-      $('#result-div').toggleClass('hidden');
-   } else if (Worksheet.state === 'Latex') {
-      Worksheet.state = 'HTML';
-      button.html('View As PDF');
-      $('#format-div').toggleClass('hidden');
-      $('#edit-div').toggleClass('hidden');
-      $('#search-button').toggleClass('hidden');
-      $('#result-div').toggleClass('hidden');
-   } else {
-      console.log('Toggle Error');
-   }
-   Worksheet.render();
-}
-
-/* ----- Begin Left Colum Listeners ------ */
-
-Listeners.searchButton = function () {
-   
-   var i, len, classSelect, topicSelect, classVal, topicVal, className, topicText, result, resultList, resultDiv, resultCount, problemDiv;
-   classSelect = $('#class-select');
-   topicSelect = $('#topic-select');
-   classVal = classSelect.val();
-   topicVal = topicSelect.val();
-   className = classSelect.children("option:selected").html();
-   topicText = topicSelect.children("option:selected").html();
-    
-   $.get("/database", {'class_name': classVal, 'topic': topicVal}, function (data, status) {
-    
-      resultList = JSON.parse(data);
-      len = resultList.length;
-       
-      resultDiv = $('#result-div');
-      resultDiv.empty();
-       
-      resultCount = $('<p></p>').html('Search for ' + className + ' ' + topicText + ' returned ' + len + ' problems.');
-      resultDiv.append(resultCount);
-       
-      for (i = 0; i < len; i++) {
-         result = resultList[i];
-         problemDiv = $('<div></div>').addClass('padding');
-         problem = $('<span></span>').addClass('padding math').attr({'problem':result.problem, 'solution':result.solution}).html(result.problem);
-         button = $('<button></button>').addClass('add-button pure-button button-success').html('Add');
-         problemDiv.append(problem);
-         problemDiv.append(button);
-         resultDiv.append(problemDiv);
-         button.on('click',Listeners.addButton);
-      }
-      MathDisplay.parseLatex();
-   });
-}
-
-Listeners.addButton = function () {
-
-   var problem, solution, problemSpan;
-   problemSpan = $(this).parent().find('span');
-   
-   problem = problemSpan.attr('problem');
-   solution = problemSpan.attr('solution');
-   
-   Worksheet.problems.push({'directions':'', 'problem':problem, 'solution':solution})
-   Worksheet.render();
-}
-
-Listeners.saveButton = function () {
-   
-   var resultMessage, resultDiv;
-
-   resultDiv = $('#saved-worksheets');
-   resultDiv.empty(); 
-
-   localStorage.setItem(Worksheet.title, JSON.stringify(Worksheet.problems));
-   
-   resultMessage = $('<p></p>').html('Worksheet saved!');
-   resultDiv.append(resultMessage);
-}
-
-Listeners.loadButton = function () {
-   
-   var i, len, worksheetDiv, worksheetName, reloadButton, deleteButton, resultDiv, emptyMessage;
-   
-   resultDiv = $('#saved-worksheets');
-   resultDiv.empty(); 
-   
-   len = localStorage.length;
-   
-   if (len === 0) {
-      emptyMessage = $('<p></p>').html('There are no saved worksheets.');
-      resultDiv.append(emptyMessage);
-   }
-   
-   for (i = 0; i < len; i++){
-      worksheetDiv = $('<div></div>').addClass('padding');
-      worksheetName = $('<span></span>').addClass('padding').html(localStorage.key(i));
-      reloadButton = $('<button></button>').addClass('add-button pure-button button-success margin').html('Reload');
-      deleteButton = $('<button></button>').addClass('add-button pure-button button-error margin').html('Delete');
-      worksheetDiv.append(worksheetName);
-      worksheetDiv.append(reloadButton);
-      worksheetDiv.append(deleteButton);
-      resultDiv.append(worksheetDiv);
-      reloadButton.on('click',Listeners.reloadButton);  
-      deleteButton.on('click',Listeners.deleteButton);
-        
-   }
-}
-
-Listeners.reloadButton = function () {
-
-   var key;
-
-   key = $(this).parent().find('span').html();
-
-   Worksheet.title = key;
-   Worksheet.problems = JSON.parse(localStorage.getItem(key));
-
-   Worksheet.render();
-}
-
-Listeners.deleteButton = function () {
-
-   var key;
-
-   key = $(this).parent().find('span').html();
-   
-   localStorage.removeItem(key);
-   
-   Listeners.loadButton();
-
-}
-
-
-/* ----- End Left Colum Listeners ------ */
-
-/* ----- Begin Right Colum Listeners ------ */
-
-Listeners.addNewButton = function () {
-   
-   var directions, problem, solution;
-   
-   directions = $('#new-directions');
-   problem = $('#new-problem');
-   solution = $('#new-solution');
-   
-   Worksheet.problems.push({'directions':directions.val(), 'problem':problem.val(), 'solution':solution.val()})
-   
-   directions.val('');
-   problem.val('');
-   solution.val('');
-   
-   Worksheet.render();
-}
-
-Listeners.solutionsCheckbox = function () {
-
-   if (this.checked === true) {
-      Worksheet.solutions = true;
-   } else {
-      Worksheet.solutions = false;  
-   }
-   Worksheet.render();
-}
-
-Listeners.verticalSelect = function () {
-   Worksheet.verticalSpace = this.value;
-   Worksheet.render();
-}
-                          
-Listeners.displayTool = function () {
-   
-   var id;
-   
-   id = $(this).attr('for');
-
-   $('#'+id).toggleClass('hidden');
-}
-Listeners.editButton = function () {
-
-   var content;
-
-   $('#build-div').addClass('hidden');
-   $('#latex-div').removeClass('hidden');
-   
-   content = Worksheet.createLatex();
-   
-   $('#latex-textarea').val(content);
-   Worksheet.renderLatex('latex-iframe', Worksheet.createLatex());
-}
-
-/* ----- End Right Colum Listeners ------ */
-
-/* ----- Begin Middle Column Listeners ------ */
-
-Listeners.editTitle = function () {
-   
-   var div, oldText, editTitle, saveButton, cancelButton;
-   
-   if (Worksheet.editing === true) {
-      return;
-   }
-   Worksheet.editing = true;
-   
-   div = $(this);
-   oldText = div.children().html();
-   
-   div.empty();
-   div.unbind('click');
-   div.addClass('pure-form');
-   
-   editTitle = $('<input></input>').addClass('margin small-padding').attr('id','new-title').val(oldText);
-   saveButton = $('<button></button>').addClass('pure-button button-success margin').html('Save').on('click', Listeners.saveTitle);
-   cancelButton = $('<button></button>').addClass('pure-button button-warning margin').html('Cancel').on('click', Listeners.cancel);
-   
-   div.append(editTitle);
-   div.append('<br>')
-   div.append(saveButton);
-   div.append(cancelButton);
-      
-}
-
-Listeners.editProblem = function () {
-   
-   var div, index, editDirections, editProblem, editSolution, saveButton, cancelButton, deleteButton, p;
-   
-   if (Worksheet.editing === true) {
-      return;
-   }
-   Worksheet.editing = true;
-   
-   div = $(this);
-   index = parseInt(div.attr('index'),10);
-   p = Worksheet.problems[index];
-   
-   div.empty();
-   div.unbind('click');
-   div.addClass('pure-form');
-    
-   editDirections = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'edit-directions','placeholder':'directions'}).val(p.directions);
-   editProblem = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'edit-problem','placeholder':'problem'}).val(p.problem);
-   editSolution = $('<textarea></textarea>').addClass('margin small-padding').attr({'id':'edit-solution','placeholder':'solution'}).val(p.solution);
-   saveButton = $('<button></button>').addClass('pure-button button-success margin').html('Save').on('click', Listeners.saveProblem);
-   cancelButton = $('<button></button>').addClass('pure-button button-warning margin').html('Cancel').on('click', Listeners.cancel);
-   deleteButton = $('<button></button>').addClass('pure-button button-error margin').html('Delete').on('click', Listeners.deleteProblem);
-   upButton = $('<button></button>').addClass('pure-button pure-button-primary margin').html('Move Up').on('click', Listeners.moveUp);
-   downButton = $('<button></button>').addClass('pure-button pure-button-primary margin').html('Move Down').on('click', Listeners.moveDown);
-   
-   div.append(editDirections);
-   div.append(editProblem);
-   div.append(editSolution);
-   div.append('<br>')
-   div.append(saveButton);
-   div.append(cancelButton);
-   div.append(deleteButton);
-   div.append(upButton);
-   div.append(downButton);
-}
-
-Listeners.saveTitle = function () {
-   
-   Worksheet.title = $('#new-title').val();
-   Worksheet.editing = false;
-   Worksheet.render();
-}
-
-Listeners.saveProblem = function () {
- 
-   var div, directions, problem, solution, index;
-   
-   div = $(this).parent();
-   index = parseInt(div.attr('index'),10);
-   
-   directions = $('#edit-directions').val();
-   problem = $('#edit-problem').val();
-   solution = $('#edit-solution').val();
-   
-   Worksheet.problems[index] = {'directions':directions,'problem':problem,'solution':solution};
-   
-   Worksheet.render();
-}
-
-Listeners.cancel = function () {
-   
-   Worksheet.render();
-}
-
-Listeners.deleteProblem = function () {
-
-   var div, directions, problem, solution, index;
-   
-   div = $(this).parent();
-   index = parseInt(div.attr('index'),10);
- 
-   Worksheet.problems.splice(index, 1);   
-   
-   Worksheet.render();
-}
-
-Listeners.moveUp = function () {
-
-   var div, index, tmp;
-
-   div = $(this).parent();
-   index = parseInt(div.attr('index'),10);
-   
-   if (index === 0) {
-      return;
-   }
-
-   tmp = Worksheet.problems[index];
-   Worksheet.problems[index] = Worksheet.problems[index - 1];
-   Worksheet.problems[index - 1] = tmp;
-   
-   Worksheet.render();
-}
-
-Listeners.moveDown = function () {
-
-   var div, index, tmp;
-
-   div = $(this).parent();
-   index = parseInt(div.attr('index'),10);
-   
-   if (index === Worksheet.problems.length - 1) {
-      return;
-   }
-
-   tmp = Worksheet.problems[index];
-   Worksheet.problems[index] = Worksheet.problems[index + 1];
-   Worksheet.problems[index + 1] = tmp;
-   
-   Worksheet.render();
-}
-
-/* ----- End Middle Column Listeners ------ */
-
-/* ----- Begin Edit Page Listeners ----- */
-Listeners.refreshButton = function () {
-   
-   var content;
-   
-   content = $('#latex-textarea').val();
-   
-   console.log()
-   
-   Worksheet.renderLatex('latex-iframe', content);
 }
 
 /* MAIN */
