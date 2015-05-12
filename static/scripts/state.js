@@ -102,12 +102,12 @@ Search.render = function () {
    div = $('<div></div>')
          .addClass('padding text-center pure-form pure-form-stacked');
    
-   div.append($('<h2></h2>').text('Search'));
+   div.append($('<h2></h2>').html('Search'));
    div.append('<hr>');
    
    if (UI.state === 'build') {
    
-      div.append($('<label></label>').text('Class'));
+      div.append($('<label></label>').html('Class'));
       classSelect = $('<select></select>');
       classSelect.addClass('max-width')
                  .attr('id', 'class-select')
@@ -122,7 +122,7 @@ Search.render = function () {
       
       div.append(classSelect);
       
-      div.append($('<label></label>').text('Topic'));
+      div.append($('<label></label>').html('Topic'));
       topicSelect = $('<select></select>').addClass('max-width').attr('id','topic-select');
       
       options = Config.topics141;
@@ -137,7 +137,7 @@ Search.render = function () {
       div.append('<br>');
       div.append($('<button></button>')
                  .addClass('pure-button button-success')
-                 .text('Search')
+                 .html('Search')
                  .on('click', Search.Listeners.searchButton));
   
       div.append($('<div></div>').addClass('padding').attr('id','search-results'));
@@ -203,7 +203,7 @@ Search.Listeners.searchButton = function () {
          container.append($('<button></button>')
                           .addClass('margin pure-button button-success')
                           .attr({'problem':r.problem, 'solution':r.solution})
-                          .text('Add')
+                          .html('Add')
                           .on('click', Search.Listeners.addButton));
          container.append('<br>')
       }
@@ -268,7 +268,7 @@ Display.renderBuild = function () {
          
    header = $('<div></div>');
    header.addClass('text-center click-me');
-   header.append($('<h1></h1>').text(Worksheet.title));
+   header.append($('<h1></h1>').html(Worksheet.title));
    div.append(header);
    header.on('click', Display.Listeners.editTitle);
    
@@ -300,7 +300,7 @@ Display.renderBuild = function () {
                     .attr({'id':'add-solution','placeholder':'solution'}));
    container.append($('<button></button>')
                     .addClass('pure-button button-success margin')
-                    .text('Add')
+                    .html('Add')
                     .on('click', Display.Listeners.addProblem));
    
    div.append(container);
@@ -380,11 +380,11 @@ Display.Listeners.editTitle = function () {
    div.append('<br>');
    div.append($('<button></button>')
               .addClass('pure-button button-success margin')
-              .text('Save')
+              .html('Save')
               .on('click', Display.Listeners.saveTitle));
    div.append($('<button></button>')
               .addClass('pure-button button-warning margin')
-              .text('Cancel')
+              .html('Cancel')
               .on('click', Display.Listeners.cancel));
 }
 
@@ -433,15 +433,15 @@ Display.Listeners.editProblem = function () {
               .val(p.solution));
    div.append($('<button></button>')
               .addClass('pure-button button-success margin')
-              .text('Save')
+              .html('Save')
               .on('click', Display.Listeners.saveProblem));
    div.append($('<button></button>')
               .addClass('pure-button button-warning margin')
-              .text('Cancel')
+              .html('Cancel')
               .on('click', Display.Listeners.cancel));
    div.append($('<button></button>')
               .addClass('pure-button button-error margin')
-              .text('Delete')
+              .html('Delete')
               .on('click', Display.Listeners.deleteProblem));
    div.append($('<button></button>')
               .addClass('pure-button pure-button-primary margin')
@@ -550,25 +550,47 @@ Tools.render = function () {
    div = $('<div></div>');
    div.addClass('padding text-center pure-form pure-form-stacked');
    
-   div.append($('<h2></h2>').text('Tools'));
+   div.append($('<h2></h2>').html('Tools'));
    div.append('<hr>');
 
    if (UI.state === 'build') {
       div.append($('<button></button>')
-              .addClass('pure-button pure-button-primary')
-              .text('View PDF')
-              .on('click',Tools.Listeners.viewState)
-      );
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('View PDF')
+                 .on('click',Tools.Listeners.viewState));
+      div.append($('<h3></h3>').html('Manage Worksheets'));
+      div.append($('<button></button>')
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('Save')
+                 .on('click',Tools.Listeners.saveButton));
+      div.append($('<button></button>')
+                 .addClass('pure-button button-warning margin')
+                 .html('Load')
+                 .on('click',Tools.Listeners.loadButton));
+      div.append($('<div></div>').attr('id','saved-worksheets'));
+     
    }
    if (UI.state === 'view') {
       div.append($('<button></button>')
                  .addClass('pure-button pure-button-primary margin')
-                 .text('Build Worksheet')
+                 .html('Build Worksheet')
                  .on('click',Tools.Listeners.buildState));
       div.append($('<button></button>')
                  .addClass('pure-button button-error margin')
-                 .text('Edit Latex')
+                 .html('Edit Latex')
                  .on('click',Tools.Listeners.editState));
+      div.append('<br><br><br>');   
+      div.append($('<input></input>')
+                 .addClass('margin')
+                 .attr('type','checkbox')
+                 .on('change',Tools.Listeners.solutionsCheckbox));
+      div.append('Show Solutions');
+      div.append($('<h3></h3>').html('Manage Worksheets'));
+      div.append($('<button></button>')
+                 .addClass('pure-button pure-button-primary margin')
+                 .html('Save')
+                 .on('click',Tools.Listeners.saveButton));
+      div.append($('<div></div>').attr('id','saved-worksheets'));
    }
    
    this.content.empty();
@@ -595,6 +617,74 @@ Tools.Listeners.editState = function () {
    UI.render();
 }
 
+Tools.Listeners.solutionsCheckbox = function () {
+
+   if (this.checked === true) {
+      Worksheet.solutions = true;
+   } else {
+      Worksheet.solutions = false;  
+   }
+   Display.render();
+}
+
+Tools.Listeners.saveButton = function () {
+   localStorage.setItem(Worksheet.title, JSON.stringify(Worksheet.problems));
+   $('#saved-worksheets').html($('<p></p>').html('Worksheet Saved!'));
+}
+
+Tools.Listeners.loadButton = function () {
+   
+   var i, len, container, div;
+   
+   div = $('#saved-worksheets');
+   div.empty(); 
+   
+   len = localStorage.length;
+   
+   if (len === 0) {
+      div.append($('<p></p>').html('There are no saved worksheets.'));
+      return;
+   }
+   
+   div.append($('<p></p>').html('Saved Worksheets:'));
+   for (i = 0; i < len; i++){
+      container = $('<div></div>').addClass('padding');
+      container.append($('<span></span>').addClass('padding').html(localStorage.key(i)));
+      container.append($('<button></button>')
+                       .addClass('pure-button button-success margin')
+                       .html('Reload')
+                       .on('click',Tools.Listeners.reloadButton));
+      container.append($('<button></button>')
+                       .addClass('pure-button button-error margin')
+                       .html('Delete')
+                       .on('click',Tools.Listeners.deleteButton));
+      div.append(container);
+   }
+}
+
+Tools.Listeners.reloadButton = function () {
+
+   var key;
+
+   key = $(this).parent().find('span').html();
+
+   Worksheet.title = key;
+   Worksheet.problems = JSON.parse(localStorage.getItem(key));
+
+   Display.render();
+}
+
+Tools.Listeners.deleteButton = function () {
+
+   var key;
+
+   key = $(this).parent().find('span').html();
+   
+   localStorage.removeItem(key);
+   
+   Tools.Listeners.loadButton();
+}
+
 /* Edit Object */
 
 Edit = {}
@@ -618,7 +708,7 @@ Edit.render = function () {
    
    div.append($('<button></button>')
                .addClass('pure-button pure-button-primary max-width margin')
-               .text('Refresh')
+               .html('Refresh')
                .on('click',Edit.Listeners.refresh)
    );
    
@@ -651,7 +741,7 @@ Worksheet.init = function () {
    this.title = 'Worksheet';
    this.problems = [];
    
-   this.solutions = true;
+   this.solutions = false;
    this.verticalSpace = 1;
 }
 
