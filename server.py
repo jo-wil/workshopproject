@@ -11,6 +11,7 @@ render = web.template.render('templates/')
 urls = (
     '/worksheet', 'Worksheet',
     '/database', 'Database',
+    '/admin', 'Admin',
     '/', 'Index'
 )
 
@@ -27,6 +28,12 @@ class Database:
     def GET(self):
         user_data = web.input(class_name = 'None', topic = 'None')
         return db.query(user_data.class_name, user_data.topic)
+    def POST(self):
+        user_data = web.input(password = 'None', data = 'None')
+        return db.insert(user_data.password, user_data.data)
+class Admin:
+    def GET(self):
+        return render.admin()
 
 class Index:        
     def GET(self):

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<html>
+   <head>
+      <title> Admin </title>
+      <script>
+        var fileHandler = function (evt) {
+           var content, password, xmlhttp;
+           
+           content = evt.target.result;
+           password = document.getElementById('password').value;
+
+           // ajax to send the content to the server
+           xmlhttp = new XMLHttpRequest();
+
+           xmlhttp.onreadystatechange = function()
+           {
+              if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                 document.getElementById('result').innerHTML = xmlhttp.responseText;
+              }
+           }
+           xmlhttp.open('POST','/database',true);
+           xmlhttp.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+           xmlhttp.send('password=' + password + '&data=' + content);
+        }
+        var readFile = function (evt) {
+           var file, reader;
+          
+           file = document.getElementById('fileinput').files[0]
+
+           if (file) {
+              reader = new FileReader();
+              reader.addEventListener('load', fileHandler);
+              reader.readAsText(file);
+           } else { 
+              alert("Failed to load file");
+           }
+        }
+        
+        var main = function () {
+            document.getElementById('upload').addEventListener('click', readFile);
+        }
+        window.addEventListener('load',main);
+      
+      </script>
+   </head>
+   <body>
+      <h1> CP SWM Admin Page </h1>
+      <p> Add problems to the database </p> 
+      <input id="fileinput" type="file"> <br>
+      <input id="password" type="password" placeholder="password"> <br>
+      <button id="upload"> Upload </button>
+      <p id='result'> </p>
+   </body>
+</html>
