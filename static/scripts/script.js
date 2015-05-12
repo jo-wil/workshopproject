@@ -136,7 +136,7 @@ Search.render = function () {
       
       div.append('<br>');
       div.append($('<button></button>')
-                 .addClass('pure-button button-success')
+                 .addClass('pure-button pure-button-primary')
                  .html('Search')
                  .on('click', Search.Listeners.searchButton));
   
