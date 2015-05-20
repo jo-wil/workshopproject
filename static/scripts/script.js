@@ -8,10 +8,29 @@ Config = {
   
   topics141: [{'text': 'Limits', 'value': 'limits'}, 
               {'text': 'Derivatives', 'value': 'derivatives'},
-              {'text': 'Integrals','value': 'integrals'}],
+              {'text': 'Integrals','value': 'integrals'}],  
               
-  topics142: [{'text': 'asdf', 'value': 'asdf'},
-              {'text': 'asdf', 'value': 'hgsd'}],                                       
+  topics142: [{'text': 'Indefinite Integrals and the U substitution method', 'value': 'indefiniteintegralsandtheusubstitutionmethod'},
+              {'text': 'U-substitution with initial value problem', 'value': 'u-substitutionwithinitialvalueproblem'},
+              {'text': 'Definite integrals', 'value': 'definiteintegrals'},
+              {'text': 'Definite integrals and symmetry', 'value': 'definiteintegralsandsymmetry'},
+              {'text': 'Substitution and Area between Curves', 'value': 'substitutionandareabetweencurves'},
+              {'text': 'Volume using Cross-Sections', 'value': 'volumeusingcross-sections'},
+              {'text': 'Solids of Revolution by using disk/washer method', 'value': 'solidsofrevolutionbyusingdisk/washermethod'},
+              {'text': 'Solids of Revolution by using shell method', 'value': 'solidsofrevolutionbyusingshellmethod'},
+              {'text': 'Arc Length', 'value': 'arclength'},
+              {'text': 'Areas of Surfaces of Revolution', 'value': 'areasofsurfacesofrevolution'},
+              {'text': 'Inverse Functions and Their Derivatives', 'value': 'inversefunctionsandtheirderivatives'},
+              {'text': 'Logarithmic Differentiation', 'value': 'logarithmicdifferentiation'},
+              {'text': 'Derivative of the Exponential', 'value': 'derivativeoftheexponential'},
+              {'text': 'General Exponentials', 'value': 'generalexponentials'},
+              {'text': 'Indeterminate Forms and L’Hospital’s Rule', 'value': 'indeterminateformsandl’hospital’srule'},
+              {'text': 'Hyperbolic Functions', 'value': 'hyperbolicfunctions'},
+              {'text': 'Integration by Parts', 'value': 'integrationbyparts'},
+              {'text': 'Trigonometric Integrals', 'value': 'trigonometricintegrals'},
+              {'text': 'Trigonometric Substitutions', 'value': 'trigonometricsubstitutions'},
+              {'text': 'Integration of Rational Functions by Partial Fractions', 'value': 'integrationofrationalfunctionsbypartialfractions'},
+              {'text': 'Improper Integrals', 'value': 'improperintegrals'}],                                       
   
   topics143: [{'text': 'gfsd', 'value': 'erwt'},
               {'text': 'wert', 'value': 'ewrt'}]  
@@ -742,7 +761,7 @@ Worksheet.init = function () {
    this.problems = [];
    
    this.solutions = false;
-   this.verticalSpace = 1;
+   this.verticalSpace = 3;
 }
 
 Worksheet.createLatex = function () {
@@ -753,17 +772,21 @@ Worksheet.createLatex = function () {
              '\\title{' + Worksheet.title + '}\n' +
              '\\author{SWM}\n' +
              '\\begin{document}\n' +
-             '\\maketitle\n';
+             '\\maketitle\n\n';
              
-   len = Worksheet.problems.length;          
+   len = Worksheet.problems.length;
+   content += '% ----- PROBLEMS START -----\n\n'          
    for (i = 0; i < len; i++) {
       p = Worksheet.problems[i];
-      content += p.directions + '\n\\vspace{1cm}\n\n';
-      if (Worksheet.solutions) {
-         content += p.problem + '\n\\vspace{1cm}\n\n';
-         content += p.solution + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+      content += '% ----- PROBLEM '+ (i+1) +' -----\n\n'          
+      if(p.directions) {
+         content += p.directions + '\n\n\\vspace{1cm}\n\n';
+      }
+      if (Worksheet.solutions && p.solution) {
+         content += p.problem + '\n\n\\vspace{1cm}\n\n';
+         content += p.solution + '\n\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
       } else {
-         content += p.problem + '\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
+         content += p.problem + '\n\n\\vspace{' + Worksheet.verticalSpace + 'cm}\n\n';
       }
    }
    
