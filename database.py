@@ -1,16 +1,20 @@
 import sqlite3
 import json
 import sys
+import hashlib
 
+# database class
 class DB:
 
+    # creates the table if it doesnt exist
     def __init__(self):
         conn = sqlite3.connect('application.db')
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS Problems (problem TEXT UNIQUE, solution TEXT, class INTEGER, topic TEXT, level INTEGER)''')
         conn.commit()
         conn.close()
-      
+    
+    # selects the problems that match the given class and topic  
     def query(self, class_name, topic):
         conn = sqlite3.connect('application.db')
         c = conn.cursor()  
@@ -22,11 +26,13 @@ class DB:
            result.append({'problem':row[0],'solution':row[1]})
         return json.dumps(result)
 
+    # inserts the data into the the database if the password is correct
     def insert(self, password, data):
-        if password == 'pass':
+        if hashlib.sha1(password).hexdigest() == '18929adffe5569c0acb809132c315a7e06154f97':
             return self.parse_data(data)
         return 'Incorrect Password!'
 
+    # this is a "private" function that parses the data format and adds the problems to the db
     def parse_data(self, data):
         data_rows = data.split('\n')[:-1]
       
@@ -82,12 +88,15 @@ class DB:
 
         return 'Okay'
 
+
+# this is called if the database file is used from the command line, it is similar to the insert function called from the web
 def upload():
     db = DB()    
     f = open(sys.argv[1],'r')
     data_file = f.read()
     f.close()
     print db.parse_data(data_file)
-   
+
+# this is executed if python database.py <filename> is run   
 if __name__ == "__main__" and len(sys.argv) == 2:
     upload()

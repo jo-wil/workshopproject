@@ -1,6 +1,9 @@
 var Config, UI, Search, Display, Tools, Edit, Worksheet, MathDisplay;
 
-/* Config Object */
+/* Config Object
+ * this object holds hard coded options
+ * for now these are just the drop down menus
+ **/
 Config = {
   classes: [{'text': 'Math 141', 'value': '141'}, 
             {'text': 'Math 142', 'value': '142'}, 
@@ -36,7 +39,9 @@ Config = {
               {'text': 'wert', 'value': 'ewrt'}]  
 }
 
-/* MathDisplay Object */
+/* MathDisplay Object 
+ * this object runs the mathjax engine
+ **/
 
 MathDisplay = {}
 
@@ -53,7 +58,9 @@ MathDisplay.parseLatex = function () {
    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
 
-/* Main UI Object */
+/* Main UI Object 
+ * this object is called at page init and whenever the entire UI needs to be rerendered
+ **/
 
 UI = {}
 
@@ -100,7 +107,9 @@ UI.render = function () {
 
 }
 
-/* Search Object */
+/* Search Object 
+ * this object creates and manages the search column
+ **/
 
 Search = {}
 
@@ -166,6 +175,9 @@ Search.render = function () {
    this.content.append(div);   
 }
 
+/* Listeners Object
+ * this object contains all of the listeners for the search column
+ **/ 
 Search.Listeners = {}
 
 Search.Listeners.classSelect = function () {
@@ -245,7 +257,9 @@ Search.Listeners.addButton = function () {
     
 }
 
-/* Display Object */
+/* Display Object 
+ * this object creates and runs the display object
+ **/
 
 Display = {}
 
@@ -376,7 +390,9 @@ Display.renderEdit = function () {
    this.content.append(div);
    
 }
-
+/* Listeners Object
+ * this object contains all of the listeners for the display column
+ **/ 
 Display.Listeners = {}
 
 Display.Listeners.editTitle = function () {
@@ -548,7 +564,9 @@ Display.Listeners.moveDown = function () {
    Display.render();
 }
 
-/* Tools Object */
+/* Tools Object 
+ * this object creates and runs the tools column
+ **/
 
 Tools = {}
 
@@ -615,6 +633,10 @@ Tools.render = function () {
    this.content.empty();
    this.content.append(div);   
 }
+
+/* Listenser Object
+ * this contains all the listeners for the tools column
+ **/
 
 Tools.Listeners = {}
 
@@ -704,7 +726,9 @@ Tools.Listeners.deleteButton = function () {
    Tools.Listeners.loadButton();
 }
 
-/* Edit Object */
+/* Edit Object 
+ * this object creates and runs the latex texteditor
+ **/
 
 Edit = {}
 
@@ -744,6 +768,9 @@ Edit.render = function () {
    this.content.append(div);  
 }
 
+/* Listenser Object
+ * this contains all the listeners for the Edit column
+ * */
 Edit.Listeners = {}
 
 Edit.Listeners.refresh = function () {
@@ -751,7 +778,9 @@ Edit.Listeners.refresh = function () {
    Display.render();
 }
 
-/* Worksheet Object */
+/* Worksheet Object 
+ * this object stores all the data for the worksheet
+ * */
 
 Worksheet = {}
 
