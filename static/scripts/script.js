@@ -399,10 +399,10 @@ Display.Listeners.editTitle = function () {
    
    var div, oldTitle, editTitle, saveButton, cancelButton;
    
-   if (this.editing === true) {
+   if (Display.editing === true) {
       return;
    }
-   this.editing = true;
+   Display.editing = true;
     
    div = $(this);
    oldTitle = div.children().html();
@@ -441,10 +441,10 @@ Display.Listeners.editProblem = function () {
 
    var div, index, p;
    
-   if (this.editing === true) {
+   if (Display.editing === true) {
       return;
    }
-   this.editing = true;
+   Display.editing = true;
    
    div = $(this);
    index = parseInt(div.attr('index'),10);
