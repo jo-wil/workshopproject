@@ -8,10 +8,14 @@ Config = {
   classes: [{'text': 'Math 141', 'value': '141'}, 
             {'text': 'Math 142', 'value': '142'}, 
             {'text': 'Math 143', 'value': '143'}],
-  
+
   topics141: [{'text': 'Limits', 'value': 'limits'}, 
-              {'text': 'Derivatives', 'value': 'derivatives'},
-              {'text': 'Integrals','value': 'integrals'}],  
+              {'text': 'Continuity', 'value': 'continuity'},
+              {'text': 'Slopes of Curves', 'value': 'slopesofcurves'},
+              {'text': 'Definition of the Derivative', 'value': 'definitionofthederivative'}, 
+              {'text': 'Derivatives of Trig Functions', 'value': 'derivativesoftrigfunctions'},  
+              {'text': 'Differentiation Rules', 'value': 'differentiationrules'},  
+              {'text': 'Implicit Differentiation', 'value': 'implicitdifferentiation'}],  
               
   topics142: [{'text': 'Indefinite Integrals and the U substitution method', 'value': 'indefiniteintegralsandtheusubstitutionmethod'},
               {'text': 'U-substitution with initial value problem', 'value': 'u-substitutionwithinitialvalueproblem'},
@@ -35,8 +39,7 @@ Config = {
               {'text': 'Integration of Rational Functions by Partial Fractions', 'value': 'integrationofrationalfunctionsbypartialfractions'},
               {'text': 'Improper Integrals', 'value': 'improperintegrals'}],                                       
   
-  topics143: [{'text': 'gfsd', 'value': 'erwt'},
-              {'text': 'wert', 'value': 'ewrt'}]  
+  topics143: []  
 }
 
 /* MathDisplay Object 
